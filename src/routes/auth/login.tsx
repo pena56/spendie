@@ -32,6 +32,15 @@ const formSchema = z.object({
   flow: z.string(),
 });
 
+/**
+ * Render the login route UI and handle the email/password sign-in flow.
+ *
+ * Validates form inputs, invokes the auth `signIn` with the "password" strategy,
+ * navigates to "/dashboard" on success, displays an error message on failure,
+ * and reflects submission state on the submit button.
+ *
+ * @returns A React element rendering the login form and its surrounding layout
+ */
 function RouteComponent() {
   const { signIn } = useAuthActions();
   const [isSubmitting, setIsSubmitting] = useState(false);

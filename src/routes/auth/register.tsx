@@ -32,6 +32,13 @@ const formSchema = z.object({
   flow: z.string(),
 });
 
+/**
+ * Renders the registration form and handles sign-up via the "password" auth flow.
+ *
+ * The form validates email and password, displays field-level validation errors, shows a loading state while submitting, attempts authentication with `signIn`, resets the form and navigates to `/dashboard` on success, and displays an error message on failure.
+ *
+ * @returns The React element for the register route UI.
+ */
 function RouteComponent() {
   const { signIn } = useAuthActions();
   const [isSubmitting, setIsSubmitting] = useState(false);
