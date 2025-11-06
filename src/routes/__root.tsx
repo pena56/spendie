@@ -46,6 +46,12 @@ function RootComponent() {
   );
 }
 
+/**
+ * Renders the application's root HTML document including head, body, global toaster, devtools, and runtime scripts.
+ *
+ * @param children - React nodes to render inside the document body
+ * @returns The root HTML element that serves as the app shell
+ */
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">

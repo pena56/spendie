@@ -7,6 +7,11 @@ export const Route = createFileRoute("/dashboard/")({
   component: RouteComponent,
 });
 
+/**
+ * Renders the dashboard view with a link to the site root and a Signout button shown only to authenticated users.
+ *
+ * @returns The React element for the dashboard page. The Signout button invokes `signOut()` when clicked.
+ */
 function RouteComponent() {
   const { signOut } = useAuthActions();
 

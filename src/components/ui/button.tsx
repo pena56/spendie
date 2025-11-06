@@ -36,6 +36,15 @@ const buttonVariants = cva(
   }
 );
 
+/**
+ * Render a variant-driven button that supports polymorphic rendering and an optional loading state.
+ *
+ * @param variant - Visual variant to apply (e.g., "default", "destructive", "outline", "secondary", "ghost", "link").
+ * @param size - Size variant to apply (e.g., "default", "sm", "lg", "icon").
+ * @param asChild - When true, renders the button content using a Radix `Slot` so the caller can provide the element; when false renders a native `button`.
+ * @param isLoading - When true, disables the control and displays a spinner instead of children.
+ * @returns The rendered element (a `button` or the provided `Slot` child) with computed variant/size classes, a `data-slot="button"` attribute, and an optional loading spinner.
+ */
 function Button({
   className,
   variant,
