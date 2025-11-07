@@ -8,10 +8,11 @@ import {
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { Toaster } from "@/components/ui/sonner";
+import { wrapCreateRootRouteWithSentry } from "@sentry/tanstackstart-react";
 
 import appCss from "../styles.css?url";
 
-export const Route = createRootRouteWithContext<{
+export const Route = wrapCreateRootRouteWithSentry(createRootRouteWithContext)<{
   queryClient: QueryClient;
 }>()({
   head: () => ({

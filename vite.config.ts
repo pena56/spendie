@@ -5,6 +5,7 @@ import viteTsConfigPaths from "vite-tsconfig-paths";
 import { VitePWA } from "vite-plugin-pwa";
 import tailwindcss from "@tailwindcss/vite";
 import { cloudflare } from "@cloudflare/vite-plugin";
+import { wrapVinxiConfigWithSentry } from "@sentry/tanstackstart-react";
 
 const config = defineConfig({
   plugins: [
@@ -60,4 +61,12 @@ const config = defineConfig({
   ],
 });
 
-export default config;
+export default wrapVinxiConfigWithSentry(config, {
+  org: "conversa-zr",
+  project: "spendie",
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+
+  // Only print logs for uploading source maps in CI
+  // Set to `true` to suppress logs
+  silent: !process.env.CI,
+});
