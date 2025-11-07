@@ -27,6 +27,7 @@ export const Route = createFileRoute("/auth/register")({
 });
 
 const formSchema = z.object({
+  name: z.string().min(1, "Name is required"),
   email: z.email().min(1, "A valid email address is required."),
   password: z.string().min(1, "Password is required."),
   flow: z.string(),
@@ -39,6 +40,7 @@ function RouteComponent() {
 
   const form = useForm({
     defaultValues: {
+      name: "",
       email: "",
       password: "",
       flow: "signUp",
@@ -79,6 +81,31 @@ function RouteComponent() {
             }}
           >
             <FieldGroup>
+              <form.Field
+                name="name"
+                children={(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>Name:</FieldLabel>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        aria-invalid={isInvalid}
+                        autoComplete="off"
+                      />
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              />
+
               <form.Field
                 name="email"
                 children={(field) => {
