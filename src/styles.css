@@ -18,6 +18,14 @@ code {
     source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
+@layer components {
+  .shadow-shift {
+    border-width: 2px;
+    border-color: black;
+    box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 1);
+    transform: translate(-2px, -2px);
+}
+}
 
 :root {
   --background: oklch(1 0 0);
