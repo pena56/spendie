@@ -113,7 +113,7 @@ export function TransactionFormModal({
       description: defaultValue?.description || "",
       notes: defaultValue?.notes || "",
       category: defaultValue?.category || transactionCategories[0],
-      type: defaultValue?.type || transactionType[0],
+      type: defaultValue?.type || transactionType[1],
       date: defaultValue?.date || Date.now(),
     } satisfies FormValues,
     onSubmit: async ({ value }) => {
