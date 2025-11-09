@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TransactionCategories } from "@/constants/categories";
-import { formatDate, showErrorMessage } from "@/lib/utils";
+import { formatCurrency, formatDate, showErrorMessage } from "@/lib/utils";
 import { useState } from "react";
 import { DeleteConfirmationModal } from "../delete-confirmation-modal";
 import { useMutation } from "@tanstack/react-query";
@@ -116,11 +116,6 @@ export const columns: ColumnDef<TransactionType>[] = [
     cell: ({ row }) => {
       const transaction = row.original;
       const amount = parseFloat(row.getValue("amount"));
-      const formatted = Intl.NumberFormat("en-NG", {
-        style: "currency",
-        currency: "NGN",
-        maximumFractionDigits: 2,
-      }).format(amount);
 
       return (
         <div
@@ -129,7 +124,7 @@ export const columns: ColumnDef<TransactionType>[] = [
           }`}
         >
           {transaction.type === "income" ? "+" : "-"}
-          {formatted}
+          {formatCurrency(amount)}
         </div>
       );
     },

@@ -23,3 +23,12 @@ export function formatDate(timestamp: number): string {
     year: "numeric",
   });
 }
+
+export function formatCurrency(amount?: number): string {
+  const formatter = new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
+    maximumFractionDigits: 2,
+  });
+  return formatter.format(amount ?? 0);
+}
