@@ -1,16 +1,13 @@
+import { LoadingScreen } from "@/components/loading-screen";
 import { LoginForm } from "@/components/login-form";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
-
-function LoadingSpinner() {
-  return <div>Loading...</div>;
-}
 
 function PrivateLayout() {
   const { isAuthenticated, isLoading } = useConvexAuth();
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <LoadingScreen />;
   }
 
   if (!isAuthenticated) {

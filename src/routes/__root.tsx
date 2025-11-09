@@ -53,7 +53,14 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
-        <Toaster />
+        <Toaster
+          duration={10000}
+          theme="light"
+          richColors
+          style={{
+            fontFamily: "Space Grotesk",
+          }}
+        />
         <Scripts />
       </body>
     </html>

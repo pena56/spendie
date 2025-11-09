@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="gold metallic circular frame">
+  <defs>
+    <!-- Outer golden radial gradient -->
+    <radialGradient id="ringRadial" cx="40%" cy="35%" r="80%">
+      <stop offset="0%" stop-color="#FFF7A8"/>
+      <stop offset="30%" stop-color="#FFEA4F"/>
+      <stop offset="65%" stop-color="#FFD600"/>
+      <stop offset="100%" stop-color="#FFB800"/>
+    </radialGradient>
+
+    <!-- Inner bevel gradient (lighter inner edge) -->
+    <radialGradient id="innerBevel" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.85"/>
+      <stop offset="40%" stop-color="#ffffff" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Outer rim stroke gradient highlight -->
+    <linearGradient id="rimStroke" x1="0%" x2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.6"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.35"/>
+    </linearGradient>
+
+    <!-- subtle inner thin ring to simulate painted edge -->
+    <linearGradient id="thinEdge" x1="0%" x2="100%">
+      <stop offset="0%" stop-color="#FFF6A1"/>
+      <stop offset="100%" stop-color="#C6A400"/>
+    </linearGradient>
+
+    <!-- Mask to punch a transparent hole in the center -->
+    <mask id="donutMask">
+      <!-- white shows, black hides -->
+      <rect x="0" y="0" width="512" height="512" fill="white"/>
+      <circle cx="256" cy="256" r="160" fill="black"/>
+    </mask>
+
+    <!-- Outer drop shadow -->
+    <filter id="outerShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="6" result="blur"/>
+      <feOffset in="blur" dx="4" dy="6" result="offsetBlur"/>
+      <feColorMatrix in="offsetBlur" type="matrix"
+        values="0 0 0 0 0
+                0 0 0 0 0
+                0 0 0 0 0
+                0 0 0 0.45" result="shadow"/>
+      <feMerge>
+        <feMergeNode in="shadow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Inner shadow (creates inward dark rim) -->
+    <filter id="innerShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="8" result="blurAlpha"/>
+      <feOffset in="blurAlpha" dx="0" dy="4" result="offBlur"/>
+      <feColorMatrix in="offBlur" type="matrix"
+        values="0 0 0 0 0
+                0 0 0 0 0
+                0 0 0 0 0
+                0 0 0 0.45" result="dark"/>
+      <feComposite in="dark" in2="SourceAlpha" operator="arithmetic" k1="0" k2="1" k3="-1" k4="0" result="innerOnly"/>
+      <feMerge>
+        <feMergeNode in="innerOnly"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- subtle glossy highlight overlay -->
+    <radialGradient id="gloss" cx="35%" cy="25%" r="60%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.6"/>
+      <stop offset="30%" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Outer soft shadow under the ring (only visible where ring exists) -->
+  <g filter="url(#outerShadow)">
+    <rect x="0" y="0" width="512" height="512" fill="transparent" />
+    <g mask="url(#donutMask)">
+      <circle cx="256" cy="256" r="230" fill="url(#ringRadial)"/>
+    </g>
+  </g>
+
+  <!-- Inner bevel highlight inside the ring -->
+  <g mask="url(#donutMask)" filter="url(#innerShadow)">
+    <circle cx="256" cy="256" r="190" fill="url(#innerBevel)" opacity="0.95"/>
+  </g>
+
+  <!-- Thin painted inner edge -->
+  <g mask="url(#donutMask)">
+    <circle cx="256" cy="256" r="168" fill="none" stroke="url(#thinEdge)" stroke-width="6" />
+  </g>
+
+  <!-- Outer rim highlight stroke -->
+  <g mask="url(#donutMask)">
+    <circle cx="256" cy="256" r="228" fill="none" stroke="url(#rimStroke)" stroke-width="6" stroke-linecap="round"/>
+  </g>
+
+  <!-- Glossy highlight across top-left -->
+  <g mask="url(#donutMask)" opacity="0.9">
+    <circle cx="200" cy="160" r="140" fill="url(#gloss)" />
+  </g>
+
+  <!-- subtle dark band near outer edge -->
+  <g mask="url(#donutMask)" opacity="0.25">
+    <circle cx="256" cy="256" r="208" fill="none" stroke="#000000" stroke-width="10" stroke-linecap="round" />
+  </g>
+
+  <!-- subtle inner darker band -->
+  <g mask="url(#donutMask)" opacity="0.22">
+    <circle cx="256" cy="256" r="150" fill="none" stroke="#000000" stroke-width="8" stroke-linecap="round" />
+  </g>
+
+  <!-- small outer specular highlight -->
+  <g mask="url(#donutMask)" opacity="0.9">
+    <ellipse cx="172" cy="120" rx="28" ry="12" fill="#ffffff" opacity="0.35" />
+  </g>
+</svg>
