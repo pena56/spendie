@@ -36,7 +36,7 @@ export type Category = Doc<"transactions">["category"];
 export type TransactionType = Doc<"transactions">["type"];
 export type TransactionId = Doc<"transactions">["_id"];
 
-export interface DefaultExpenseValue {
+export interface DefaultTransactionValue {
   _id: TransactionId;
   amount: number;
   description: string;
@@ -47,7 +47,7 @@ export interface DefaultExpenseValue {
 }
 
 interface TransactionFormModalProps {
-  defaultValue?: DefaultExpenseValue;
+  defaultValue?: DefaultTransactionValue;
   open: boolean;
   setOpen: (val: boolean) => void;
 }
@@ -98,9 +98,6 @@ export function TransactionFormModal({
       onSuccess: () => {
         toast.success("Transaction updated successfully");
         setOpen(false);
-        form.setFieldValue("amount", 0);
-        form.setFieldValue("description", "");
-        form.setFieldValue("notes", "");
       },
       onError: (err) => {
         showErrorMessage(err);
@@ -346,11 +343,7 @@ export function TransactionFormModal({
 
               <DialogFooter>
                 <Button
-                  isLoading={
-                    isAddingTransaction ||
-                    isUpdatingTransaction ||
-                    isUpdatingTransaction
-                  }
+                  isLoading={isAddingTransaction || isUpdatingTransaction}
                   type="submit"
                   className="w-full bg-linear-to-r from-pink-500 to-orange-400 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5 text-black"
                 >

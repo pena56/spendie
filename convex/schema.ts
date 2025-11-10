@@ -33,7 +33,24 @@ const schema = defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_user_date", ["userId", "date"])
-    .index("by_user_type", ["userId", "type"]),
+    .index("by_user_type", ["userId", "type"])
+    .index("by_user_category", ["userId", "category"])
+    .index("by_user_category_date", ["userId", "category", "date"]),
+  budgets: defineTable({
+    userId: v.id("users"),
+    category: v.union(
+      ...TransactionCategories.map((item) => v.literal(item.name))
+    ),
+    limit: v.number(),
+    periodStart: v.number(),
+    periodEnd: v.number(),
+    isActive: v.boolean(),
+    notes: v.optional(v.string()),
+    scheduledToken: v.optional(v.id("_scheduled_functions")),
+  })
+    .index("by_user_category_period", ["userId", "category", "periodStart"])
+    .index("by_user_active", ["userId", "isActive"])
+    .index("by_user_category", ["userId", "category"]),
 });
 
 export default schema;

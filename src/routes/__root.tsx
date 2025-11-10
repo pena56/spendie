@@ -54,7 +54,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         {children}
         <Toaster
-          duration={10000}
+          duration={5000}
+          position="top-center"
           theme="light"
           richColors
           style={{

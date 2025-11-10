@@ -1,6 +1,4 @@
-"use client";
-
-import { useState } from "react";
+import { PiggyBank } from "lucide-react";
 
 const FINANCIAL_TIPS = [
   {
@@ -46,9 +44,7 @@ const FINANCIAL_TIPS = [
 ];
 
 export function LoadingScreen() {
-  const [tip] = useState<(typeof FINANCIAL_TIPS)[0] | null>(
-    FINANCIAL_TIPS[Math.floor(Math.random() * FINANCIAL_TIPS.length)]
-  );
+  const tip = FINANCIAL_TIPS[Math.floor(Math.random() * FINANCIAL_TIPS.length)];
 
   return (
     <div className="min-h-screen w-full bg-linear-to-br from-white via-gray-50 to-gray-100 flex items-center justify-center p-4">
@@ -57,8 +53,8 @@ export function LoadingScreen() {
         <div className="flex flex-col items-center space-y-6">
           <div className="relative">
             {/* Animated logo container */}
-            <div className="w-24 h-24 rounded-2xl bg-linear-to-br from-yellow-300 to-amber-400 shadow-lg flex items-center justify-center animate-pulse">
-              <div className="text-5xl font-bold text-white">$</div>
+            <div className="w-24 h-24 rounded-2xl bg-linear-to-br from-yellow-300 to-amber-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5 flex items-center justify-center animate-pulse">
+              <PiggyBank className="w-12 h-12 text-black" />
             </div>
             {/* Spinning ring */}
             <div className="absolute inset-0 rounded-2xl border-4 border-transparent border-t-yellow-400 border-r-yellow-300 animate-spin" />

@@ -18,7 +18,7 @@ export const addTransaction = mutation({
     const userId = await getAuthUserId(ctx);
 
     if (userId === null) {
-      return new ConvexError("User not aunthenticated");
+      throw new ConvexError("User not aunthenticated");
     }
 
     return await ctx.db.insert("transactions", { ...args, userId });
@@ -31,7 +31,7 @@ export const getTransactions = query({
     const userId = await getAuthUserId(ctx);
 
     if (userId === null) {
-      return new ConvexError("User not aunthenticated");
+      throw new ConvexError("User not aunthenticated");
     }
 
     let transactions = ctx.db
@@ -51,7 +51,7 @@ export const deleteTransaction = mutation({
     const { id } = args;
 
     if (userId === null) {
-      return new ConvexError("User not aunthenticated");
+      throw new ConvexError("User not aunthenticated");
     }
 
     const existing = await ctx.db.get(id);
@@ -79,7 +79,7 @@ export const updateTransaction = mutation({
     const userId = await getAuthUserId(ctx);
 
     if (userId === null) {
-      return new ConvexError("User not aunthenticated");
+      throw new ConvexError("User not aunthenticated");
     }
 
     const { _id, ...updates } = args;
@@ -87,6 +87,8 @@ export const updateTransaction = mutation({
     const existing = await ctx.db.get(_id);
 
     if (!existing) throw new ConvexError("Transaction not found");
+
+    if (existing.userId !== userId) throw new ConvexError("Not Authorized");
 
     await ctx.db.patch(_id, updates);
 

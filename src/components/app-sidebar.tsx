@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Link, useRouter } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { convexQuery } from "@convex-dev/react-query";
 import { api } from "convex/_generated/api";
 import { useAuthActions } from "@convex-dev/auth/react";
@@ -61,7 +61,7 @@ const items = [
 ];
 
 export function AppSidebar() {
-  const { data: user, isLoading } = useSuspenseQuery(
+  const { data: user, isLoading } = useQuery(
     convexQuery(api.user.getCurrentUser, {})
   );
 
@@ -90,9 +90,8 @@ export function AppSidebar() {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem className="flex items-center gap-2">
-            {/* <img src="/logo.png" className="w-10 h-10 object-contain" alt="" /> */}
-            <div className="w-10 h-10 rounded-sm bg-linear-to-br from-yellow-600 to-amber-600 shadow-lg flex items-center justify-center">
-              <div className="text-xl font-bold text-white">$</div>
+            <div className="w-10 h-10 rounded-sm bg-yellow-300 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5 flex items-center justify-center">
+              <PiggyBank className="w-7 h-7 text-black" />
             </div>
             <p className="text-2xl uppercase font-semibold">Spendie</p>
           </SidebarMenuItem>
@@ -108,6 +107,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <Link
                       to={item.url}
+                      className="rounded-sm"
                       activeProps={{
                         className:
                           "bg-yellow-300 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] translate-x-[-2px] translate-y-[-2px] font-semibold",
@@ -138,7 +138,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <SidebarMenuButton className="text-lg font-semibold h-fit border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5">
+                <SidebarMenuButton className="text-lg font-semibold rounded-sm h-fit border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5">
                   <div className="w-16 h-16 flex items-center justify-center relative overflow-hidden rounded-full">
                     <img
                       src="https://cdn.pixabay.com/photo/2025/10/17/15/16/halloween-9900545_1280.jpg"

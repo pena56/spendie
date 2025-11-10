@@ -1,6 +1,7 @@
 import { Button } from "./ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -38,12 +39,14 @@ export function DeleteConfirmationModal({
         </DialogHeader>
 
         <DialogFooter>
-          <Button
-            type="submit"
-            className="border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5 flex-1"
-          >
-            Cancel
-          </Button>
+          <DialogClose asChild>
+            <Button
+              type="submit"
+              className="border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5 flex-1"
+            >
+              Cancel
+            </Button>
+          </DialogClose>
           <Button
             type="submit"
             onClick={onConfirm}
