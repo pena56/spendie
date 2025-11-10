@@ -2,6 +2,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { api } from "convex/_generated/api";
 import { FunctionReturnType } from "convex/server";
 import { MoreHorizontal, ArrowUpDown, Edit, Trash } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -26,13 +27,35 @@ type TransactionsResult = FunctionReturnType<
 >;
 
 export type TransactionType = Extract<
-  NonNullable<TransactionsResult>,
+  NonNullable<TransactionsResult["transactions"]>,
   unknown[]
 > extends (infer T)[]
   ? T
   : NonNullable<TransactionsResult>;
 
 export const columns: ColumnDef<TransactionType>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
   {
     accessorKey: "description",
     header: "DESCRIPTION",
@@ -47,10 +70,10 @@ export const columns: ColumnDef<TransactionType>[] = [
       );
 
       return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 max-w-48">
           {category && <category.icon width={16} height={16} />}
 
-          {transaction.category}
+          <p className="truncate">{transaction.category}</p>
         </div>
       );
     },
