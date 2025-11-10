@@ -10,14 +10,14 @@ import { DeleteConfirmationModal } from "../delete-confirmation-modal";
 import { useMutation } from "@tanstack/react-query";
 import { useConvexMutation } from "@convex-dev/react-query";
 import { toast } from "sonner";
-import { showErrorMessage } from "@/lib/utils";
+import { formatCurrency, showErrorMessage } from "@/lib/utils";
 
 export type ActiveBudgets = FunctionReturnType<
   typeof api.budgets.getActiveBudgets
 >;
 
 interface BudgetCardProps {
-  data?: ActiveBudgets[0];
+  data?: ActiveBudgets["budgets"][0];
 }
 
 export function BudgetCard({ data }: BudgetCardProps) {
@@ -42,7 +42,7 @@ export function BudgetCard({ data }: BudgetCardProps) {
 
   return (
     <div
-      className={`flex flex-col space-y-2 bg-linear-to-br ${category?.color} border-2 border-black rounded-sm p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all`}
+      className={`flex flex-col space-y-2 ${category?.color} border-2 border-black rounded-sm p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all`}
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
@@ -51,8 +51,8 @@ export function BudgetCard({ data }: BudgetCardProps) {
           </div>
           <div>
             <h3 className="text-xl font-black">{data.category}</h3>
-            <p className="text-sm font-bold text-gray-700">
-              ${data.spent} / ${data.limit}
+            <p className="text-sm font-bold text-black">
+              {formatCurrency(data.spent)} / {formatCurrency(data.limit)}
             </p>
           </div>
         </div>

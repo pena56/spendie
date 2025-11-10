@@ -246,7 +246,14 @@ export const getActiveBudgets = query({
       .collect();
 
     if (budgets.length === 0) {
-      return [];
+      return {
+        budgets: [],
+        totals: {
+          totalBudget: 0,
+          totalSpent: 0,
+          totalRemaining: 0,
+        },
+      };
     }
 
     const budgetsWithSpent = await Promise.all(
@@ -281,6 +288,21 @@ export const getActiveBudgets = query({
       })
     );
 
-    return budgetsWithSpent;
+    // Compute aggregates
+    const totalBudget = budgetsWithSpent.reduce((sum, b) => sum + b.limit, 0);
+    const totalSpent = budgetsWithSpent.reduce((sum, b) => sum + b.spent, 0);
+    const totalRemaining = budgetsWithSpent.reduce(
+      (sum, b) => sum + b.remaining,
+      0
+    );
+
+    return {
+      budgets: budgetsWithSpent,
+      totals: {
+        totalBudget,
+        totalSpent,
+        totalRemaining,
+      },
+    };
   },
 });

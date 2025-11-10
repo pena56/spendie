@@ -51,7 +51,7 @@ export function DeleteConfirmationModal({
             type="submit"
             onClick={onConfirm}
             isLoading={isDeleting}
-            className="bg-red-600 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5 text-black flex-1"
+            className="bg-red-600 hover:bg-red-700 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5 text-black flex-1"
           >
             Delete
           </Button>

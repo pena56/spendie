@@ -27,23 +27,107 @@ export const addTransaction = mutation({
 
 export const getTransactions = query({
   args: {},
-  handler: async (ctx, args) => {
+  handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
 
     if (userId === null) {
-      throw new ConvexError("User not aunthenticated");
+      throw new ConvexError("User not authenticated");
     }
 
-    let transactions = ctx.db
+    // Fetch all transactions, ordered by date desc (recent first)
+    const transactions = await ctx.db
       .query("transactions")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .order("desc")
       .collect();
 
-    return transactions;
+    if (transactions.length === 0) {
+      return {
+        transactions: [],
+        income: { total: 0, change: 0 },
+        expenses: { total: 0, change: 0 },
+      };
+    }
+
+    // Calculate month boundaries (current date: Nov 10, 2025)
+    const now = Date.now();
+    const currentMonth = new Date(now);
+    const currentStart = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth(),
+      1
+    ).getTime();
+    const currentEnd = now;
+
+    const lastMonth = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth() - 1
+    );
+    const lastStart = new Date(
+      lastMonth.getFullYear(),
+      lastMonth.getMonth(),
+      1
+    ).getTime();
+    const lastEnd = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth(),
+      0
+    ).getTime(); // Last day of prev month
+
+    // Filter and sum current month
+    const currentIncomeTxns = transactions.filter(
+      (txn) =>
+        txn.type === "income" &&
+        txn.date >= currentStart &&
+        txn.date <= currentEnd
+    );
+    const currentExpenseTxns = transactions.filter(
+      (txn) =>
+        txn.type === "expense" &&
+        txn.date >= currentStart &&
+        txn.date <= currentEnd
+    );
+
+    const currentIncome = currentIncomeTxns.reduce(
+      (sum, txn) => sum + txn.amount,
+      0
+    );
+    const currentExpenses = Math.abs(
+      currentExpenseTxns.reduce((sum, txn) => sum + txn.amount, 0)
+    );
+
+    // Filter and sum last month
+    const lastIncomeTxns = transactions.filter(
+      (txn) =>
+        txn.type === "income" && txn.date >= lastStart && txn.date <= lastEnd
+    );
+    const lastExpenseTxns = transactions.filter(
+      (txn) =>
+        txn.type === "expense" && txn.date >= lastStart && txn.date <= lastEnd
+    );
+
+    const lastIncome = lastIncomeTxns.reduce((sum, txn) => sum + txn.amount, 0);
+    const lastExpenses = Math.abs(
+      lastExpenseTxns.reduce((sum, txn) => sum + txn.amount, 0)
+    );
+
+    // Compute MoM changes (%)
+    const incomeChange =
+      lastIncome > 0
+        ? Math.round(((currentIncome - lastIncome) / lastIncome) * 100)
+        : 0;
+    const expensesChange =
+      lastExpenses > 0
+        ? Math.round(((currentExpenses - lastExpenses) / lastExpenses) * 100)
+        : 0;
+
+    return {
+      transactions,
+      income: { total: currentIncome, change: incomeChange },
+      expenses: { total: currentExpenses, change: expensesChange },
+    };
   },
 });
-
 export const deleteTransaction = mutation({
   args: { id: v.id("transactions") },
   handler: async (ctx, args) => {
@@ -57,6 +141,8 @@ export const deleteTransaction = mutation({
     const existing = await ctx.db.get(id);
 
     if (!existing) throw new ConvexError("Transaction not found");
+    if (existing.userId !== userId)
+      throw new ConvexError("Unauthorized action.");
 
     await ctx.db.delete(id);
     return { success: true };

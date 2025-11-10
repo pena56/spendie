@@ -17,35 +17,23 @@ function RouteComponent() {
     convexQuery(api.transactions.getTransactions, {})
   );
 
-  const txs = Array.isArray(transactions) ? transactions : [];
-  const { totalIncome, totalExpense } = txs.reduce(
-    (
-      totals: { totalIncome: number; totalExpense: number },
-      transaction: { type?: string; amount?: number }
-    ) => {
-      if (transaction.type === "income") {
-        // Assuming 'amount' is the field to sum
-        totals.totalIncome += transaction.amount ?? 0;
-      } else if (transaction.type === "expense") {
-        totals.totalExpense += transaction.amount ?? 0;
-      }
-      return totals;
-    },
-    { totalIncome: 0, totalExpense: 0 }
-  );
-
   return (
     <Layout title="Transactions">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <TotalTransactionCard type="income" amount={totalIncome} />
+        <TotalTransactionCard
+          type="income"
+          amount={transactions?.income.total}
+          changePercent={transactions?.income.change}
+        />
 
-        <TotalTransactionCard type="expense" amount={totalExpense} />
+        <TotalTransactionCard
+          type="expense"
+          amount={transactions?.expenses.total}
+          changePercent={transactions?.expenses.change}
+        />
       </div>
 
-      <DataTable
-        columns={columns}
-        data={Array.isArray(transactions) ? transactions : []}
-      />
+      <DataTable columns={columns} data={transactions?.transactions || []} />
 
       <AddTransactionsButton />
     </Layout>

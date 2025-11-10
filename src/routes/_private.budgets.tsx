@@ -16,10 +16,14 @@ function RouteComponent() {
 
   return (
     <Layout title="Budgets">
-      <TotalBudgetCard />
+      <TotalBudgetCard
+        totalBudget={data?.totals.totalBudget}
+        remaining={data?.totals.totalRemaining}
+        totalSpent={data?.totals.totalSpent}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {data?.map((budget) => (
+        {data?.budgets.map((budget) => (
           <BudgetCard key={budget._id} data={budget} />
         ))}
       </div>
