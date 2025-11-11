@@ -51,6 +51,21 @@ const schema = defineSchema({
     .index("by_user_category_period", ["userId", "category", "periodStart"])
     .index("by_user_active", ["userId", "isActive"])
     .index("by_user_category", ["userId", "category"]),
+  insights: defineTable({
+    userId: v.id("users"),
+    insights: v.array(
+      v.object({
+        title: v.string(),
+        description: v.string(),
+        category: v.string(),
+        impact: v.string(),
+      })
+    ),
+    generatedAt: v.number(),
+    isActive: v.boolean(),
+  })
+    .index("by_user_active", ["userId", "isActive"])
+    .index("by_user_generated", ["userId", "generatedAt"]),
 });
 
 export default schema;

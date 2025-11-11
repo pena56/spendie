@@ -1,22 +1,61 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { query } from "./_generated/server";
-import { ConvexError } from "convex/values";
+import { action, internalQuery, query } from "./_generated/server";
+import { ConvexError, v } from "convex/values";
+import { api, internal } from "./_generated/api";
+import { FunctionReturnType } from "convex/server";
 
-export const getDashboard = query({
+type getDashboardResult = {
+  transactions: FunctionReturnType<
+    typeof internal.dashboard.getDashboardTransactions
+  >;
+  budgets: FunctionReturnType<typeof internal.dashboard.getDashboardBudgets>;
+  insights: FunctionReturnType<typeof api.insights.getInsights>;
+};
+
+export const getDashboardData = action({
   args: {},
-  handler: async (ctx) => {
+  handler: async (ctx): Promise<getDashboardResult> => {
     const userId = await getAuthUserId(ctx);
 
     if (userId === null) {
       throw new ConvexError("User not authenticated");
     }
 
+    const transactions = await ctx.runQuery(
+      internal.dashboard.getDashboardTransactions,
+      { userId }
+    );
+
+    const budgets = await ctx.runQuery(internal.dashboard.getDashboardBudgets, {
+      userId,
+    });
+
+    const insights = await ctx.runAction(api.insights.getInsights);
+
+    return { transactions, budgets, insights };
+  },
+});
+
+export const getDashboardTransactions = internalQuery({
+  args: {
+    userId: v.id("users"),
+  },
+  handler: async (ctx, { userId }) => {
     const transactions = await ctx.db
       .query("transactions")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .order("desc")
       .take(5);
 
+    return transactions;
+  },
+});
+
+export const getDashboardBudgets = internalQuery({
+  args: {
+    userId: v.id("users"),
+  },
+  handler: async (ctx, { userId }) => {
     const budgets = await ctx.db
       .query("budgets")
       .withIndex("by_user_active", (q) =>
@@ -62,9 +101,6 @@ export const getDashboard = query({
             })
           );
 
-    return {
-      transactions,
-      budgets: budgetsWithSpent,
-    };
+    return budgetsWithSpent;
   },
 });

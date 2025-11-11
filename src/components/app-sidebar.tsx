@@ -139,16 +139,10 @@ export function AppSidebar() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton className="text-lg font-semibold rounded-sm h-fit border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5">
-                  <div className="w-16 h-16 flex items-center justify-center relative overflow-hidden rounded-full">
+                  <div className="w-16 h-16 flex items-center justify-center relative overflow-hidden rounded-full bg-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5">
                     <img
-                      src="https://cdn.pixabay.com/photo/2025/10/17/15/16/halloween-9900545_1280.jpg"
-                      className="w-[60%] h-[60%] object-cover absolute"
-                      alt=""
-                    />
-
-                    <img
-                      src="/frames/default.svg"
-                      className="w-full h-full object-cover z-10"
+                      src="/avatars/1.svg"
+                      className="w-full h-full object-cover absolute"
                       alt=""
                     />
                   </div>

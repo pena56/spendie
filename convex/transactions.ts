@@ -364,3 +364,21 @@ export const addTransactionFromImage = action({
     }
   },
 });
+
+export const getPreviousTransactions = query({
+  args: {
+    userId: v.id("users"),
+    date: v.number(),
+  },
+  handler: async (ctx, { date, userId }) => {
+    const transactions = await ctx.db
+      .query("transactions")
+      .withIndex("by_user_date", (q) =>
+        q.eq("userId", userId).gte("date", date)
+      )
+      .order("desc")
+      .collect();
+
+    return transactions;
+  },
+});
