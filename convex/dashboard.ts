@@ -9,7 +9,10 @@ type getDashboardResult = {
     typeof internal.dashboard.getDashboardTransactions
   >;
   budgets: FunctionReturnType<typeof internal.dashboard.getDashboardBudgets>;
-  // insights: FunctionReturnType<typeof api.insights.getInsights>;
+  insights: FunctionReturnType<typeof api.workflows.insights.getActiveInsights>;
+  insightStatus: FunctionReturnType<
+    typeof api.workflows.insights.getCurrentInsightStatus
+  >;
 };
 
 export const getDashboardData = action({
@@ -30,9 +33,15 @@ export const getDashboardData = action({
       userId,
     });
 
-    // const insights = await ctx.runAction(api.insights.getInsights);
+    const insights = await ctx.runQuery(
+      api.workflows.insights.getActiveInsights
+    );
 
-    return { transactions, budgets };
+    const insightStatus = await ctx.runQuery(
+      api.workflows.insights.getCurrentInsightStatus
+    );
+
+    return { transactions, budgets, insights, insightStatus };
   },
 });
 

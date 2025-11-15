@@ -100,6 +100,7 @@ const schema = defineSchema({
     .index("by_user_category", ["userId", "category"]),
   insights: defineTable({
     userId: v.id("users"),
+    workflowId: v.string(),
     insights: v.array(
       v.object({
         title: v.string(),
@@ -112,7 +113,17 @@ const schema = defineSchema({
     isActive: v.boolean(),
   })
     .index("by_user_active", ["userId", "isActive"])
-    .index("by_user_generated", ["userId", "generatedAt"]),
+    .index("by_user_generated", ["userId", "generatedAt"])
+    .index("by_workflowId", ["workflowId"]),
+  insightGenerationStatus: defineTable({
+    userId: v.id("users"),
+    workflowId: v.string(),
+    status: v.string(),
+    progress: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_workflowId", ["workflowId"]),
   invites: defineTable({
     senderId: v.id("users"),
     recipientId: v.optional(v.id("users")),
