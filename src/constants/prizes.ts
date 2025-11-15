@@ -70,6 +70,11 @@ export const AVATARS = [
   { id: "avat_12", src: "/avatars/12.svg" },
 ];
 
+export const DEFAULT_PERKS = {
+  avatar: AVATARS[11],
+  frame: FRAMES[0],
+};
+
 export const BACKGROUND = [
   { id: "red-800", color: "oklch(44.4% 0.177 26.899)", textColor: "#000000" },
   { id: "lime-800", color: "oklch(45.3% 0.124 130.933)", textColor: "#000000" },

@@ -171,15 +171,18 @@ export function AppSidebar() {
                 <p>{user?.name}</p>
 
                 <div className="flex items-center gap-2">
-                  <Progress value={5} />
+                  <Progress value={user?.percentageProgress} />
 
                   <div className="w-8 h-8 rounded-full flex items-center justify-center bg-yellow-300 shrink-0 font-black leading-none border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5">
-                    2
+                    {user?.level}
                   </div>
                 </div>
 
                 <div className="flex items-center">
-                  <p className="text-sm"> {user?.totalXP} / 2000 XP</p>
+                  <p className="text-sm">
+                    {" "}
+                    {user?.totalXP} / {user?.xpForNextLevel} XP
+                  </p>
                 </div>
               </div>
             </SidebarMenuButton>

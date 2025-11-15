@@ -5,7 +5,7 @@ import { ConvexError, v } from "convex/values";
 import { action, mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { TransactionCategories } from "../src/constants/categories";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 export const addTransaction = mutation({
   args: {
@@ -30,7 +30,25 @@ export const addTransaction = mutation({
       throw new ConvexError("User not aunthenticated");
     }
 
-    return await ctx.db.insert("transactions", { ...args, userId });
+    const transactionId = await ctx.db.insert("transactions", {
+      ...args,
+      userId,
+    });
+
+    // ✨ Award XP after transaction is created
+    const totalTransactions = await ctx.db
+      .query("transactions")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+
+    await ctx.scheduler.runAfter(0, internal.achievements.onTransactionAdded, {
+      userId,
+      isFirstTransaction: totalTransactions.length === 1,
+      hasReceipt: !!args.receiptStorageId,
+      isVoice: args.source === "voice",
+    });
+
+    return transactionId;
   },
 });
 

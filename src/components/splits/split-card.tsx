@@ -16,7 +16,7 @@ import { Separator } from "../ui/separator";
 import { Progress } from "../ui/progress";
 import { useQuery } from "@tanstack/react-query";
 import { convexQuery } from "@convex-dev/react-query";
-import { getBackgroundById } from "@/constants/prizes";
+import { getAvatarById, getBackgroundById } from "@/constants/prizes";
 
 interface SplitCardProps {
   data?: FunctionReturnType<typeof api.splits.getUserSplits>["splits"][0];
@@ -59,7 +59,7 @@ export function SplitCard({ data }: SplitCardProps) {
                       backgroundColor: getBackgroundById(item?.background)
                         ?.color,
                     }}
-                    src={item.image || ""}
+                    src={getAvatarById(item.image)?.src || ""}
                     alt={item?.name}
                   />
                   <AvatarFallback

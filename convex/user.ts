@@ -8,19 +8,103 @@ import {
 } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 import { internal } from "./_generated/api";
-import { Password } from "@convex-dev/auth/providers/Password";
 import { Scrypt } from "lucia";
+import { LEVEL_THRESHOLDS } from "./achievements";
+
+function getXPForNextLevel(currentLevel: number): number {
+  if (currentLevel >= LEVEL_THRESHOLDS.length) {
+    return LEVEL_THRESHOLDS[LEVEL_THRESHOLDS.length - 1];
+  }
+  return LEVEL_THRESHOLDS[currentLevel];
+}
 
 export const getCurrentUser = query({
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
-
     if (userId === null) {
       return null;
     }
 
     const user = await ctx.db.get(userId);
-    return user;
+    if (!user) {
+      return null;
+    }
+
+    // Calculate XP progress
+    const currentXP = user.totalXP ?? 0;
+    const currentLevel = user.level ?? 1;
+    const xpForCurrentLevel = LEVEL_THRESHOLDS[currentLevel - 1] ?? 0;
+    const xpForNextLevel = getXPForNextLevel(currentLevel);
+    const xpProgress = currentXP - xpForCurrentLevel;
+    const xpNeeded = xpForNextLevel - xpForCurrentLevel;
+    const percentageProgress =
+      xpNeeded > 0 ? Math.min(100, (xpProgress / xpNeeded) * 100) : 100;
+
+    // Get all achievements that have prizes
+    const achievementsWithPrizes = await ctx.db.query("achievements").collect();
+
+    const unlockedPerks = user.unlockedPerks ?? [];
+
+    // Extract all avatars and frames from achievements
+    const allAvatars = achievementsWithPrizes
+      .filter((achievement) => achievement.prize?.type === "avatar")
+      .map((achievement) => ({
+        id: achievement.prize!.id,
+        name: achievement.name,
+        description: achievement.description,
+        achievementId: achievement._id,
+        xpRequired: achievement.xpRequired,
+        animation: achievement.prize!.animation,
+        isUnlocked: unlockedPerks.some(
+          (perk: {
+            type: "avatar" | "frame";
+            id: string;
+            acquiredAt: number;
+          }) => perk.type === "avatar" && perk.id === achievement.prize!.id
+        ),
+        unlockedAt: unlockedPerks.find(
+          (perk: {
+            type: "avatar" | "frame";
+            id: string;
+            acquiredAt: number;
+          }) => perk.type === "avatar" && perk.id === achievement.prize!.id
+        )?.acquiredAt,
+      }));
+
+    const allFrames = achievementsWithPrizes
+      .filter((achievement) => achievement.prize?.type === "frame")
+      .map((achievement) => ({
+        id: achievement.prize!.id,
+        name: achievement.name,
+        description: achievement.description,
+        achievementId: achievement._id,
+        xpRequired: achievement.xpRequired,
+        animation: achievement.prize!.animation,
+        isUnlocked: unlockedPerks.some(
+          (perk: {
+            type: "avatar" | "frame";
+            id: string;
+            acquiredAt: number;
+          }) => perk.type === "frame" && perk.id === achievement.prize!.id
+        ),
+        unlockedAt: unlockedPerks.find(
+          (perk: {
+            type: "avatar" | "frame";
+            id: string;
+            acquiredAt: number;
+          }) => perk.type === "frame" && perk.id === achievement.prize!.id
+        )?.acquiredAt,
+      }));
+
+    return {
+      ...user,
+      percentageProgress,
+      xpForNextLevel,
+      xpProgress,
+      xpNeeded,
+      availableAvatars: allAvatars,
+      availableFrames: allFrames,
+    };
   },
 });
 
@@ -38,7 +122,7 @@ export const updateUserInfo = mutation({
     const userId = await getAuthUserId(ctx);
 
     if (userId === null) {
-      return null;
+      throw new ConvexError("Unauthenticated");
     }
 
     const user = await ctx.db.patch(userId, arg);
@@ -301,5 +385,43 @@ export const deleteAccountData = internalMutation({
     await ctx.db.delete(userId);
 
     return { success: true };
+  },
+});
+
+// Track daily login and streak
+export const updateLastActivity = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const user = await ctx.db.get(userId);
+    if (!user) return;
+
+    const now = Date.now();
+    const lastActivity = user.lastActivity ?? 0;
+    const oneDayMs = 24 * 60 * 60 * 1000;
+
+    // Check if it's a new day
+    const isNewDay = now - lastActivity > oneDayMs;
+
+    if (isNewDay) {
+      // Calculate streak
+      const isConsecutiveDay = now - lastActivity < 2 * oneDayMs;
+      const currentStreak = isConsecutiveDay
+        ? (user.currentStreak ?? 0) + 1
+        : 1;
+
+      await ctx.db.patch(userId, {
+        lastActivity: now,
+        currentStreak,
+      });
+
+      // ✨ Award XP for daily login
+      await ctx.scheduler.runAfter(0, internal.achievements.onDailyLogin, {
+        userId,
+        streakDays: currentStreak,
+      });
+    }
   },
 });

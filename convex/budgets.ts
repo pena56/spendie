@@ -60,6 +60,10 @@ export const createBudget = mutation({
       isActive: true,
     });
 
+    await ctx.scheduler.runAfter(0, internal.achievements.onBudgetCreated, {
+      userId,
+    });
+
     const delayMs = Math.max(0, periodEnd - now);
 
     if (delayMs === 0) {

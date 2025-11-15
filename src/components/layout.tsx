@@ -1,5 +1,6 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { useXPNotifications } from "@/hooks/use-XPNotifications";
 
 export default function Layout({
   children,
@@ -8,6 +9,8 @@ export default function Layout({
   children: React.ReactNode;
   title?: string;
 }) {
+  useXPNotifications();
+
   return (
     <SidebarProvider>
       <AppSidebar />

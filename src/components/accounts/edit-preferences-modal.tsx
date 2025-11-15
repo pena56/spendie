@@ -43,9 +43,9 @@ function formatCurrency({
   locale?: string;
   currency?: string;
 }): string {
-  const formatter = new Intl.NumberFormat(locale, {
+  const formatter = new Intl.NumberFormat(locale || "en-US", {
     style: "currency",
-    currency: currency,
+    currency: currency || "USD",
     maximumFractionDigits: 2,
   });
   return formatter.format(10000);

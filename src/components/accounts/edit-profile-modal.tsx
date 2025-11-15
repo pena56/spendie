@@ -23,11 +23,13 @@ import { useState } from "react";
 import {
   AVATARS,
   BACKGROUND,
+  DEFAULT_PERKS,
   FRAMES,
+  getAvatarById,
   getBackgroundById,
   getFrameById,
 } from "@/constants/prizes";
-import { Check } from "lucide-react";
+import { Check, Lock } from "lucide-react";
 import { AvatarDisplay } from "../avatar-display";
 
 export const formatTimestampForInput = (timestamp: number) => {
@@ -182,7 +184,46 @@ export function EditProfileModal() {
 
               <TabsContent value="avatar">
                 <div className="grid grid-cols-3 gap-4">
-                  {AVATARS?.map((item) => (
+                  {/* Default Avatar */}
+                  <form.Subscribe
+                    selector={(state) => state.values.image}
+                    children={(selectedImageId) => {
+                      const selectedAvatar = AVATARS?.find(
+                        (item) => item.id === selectedImageId
+                      );
+
+                      return (
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            form.setFieldValue(
+                              "image",
+                              DEFAULT_PERKS.avatar.id
+                            );
+                          }}
+                          className={`w-20 m-auto h-20 bg-white hover:bg-gray-100 p-0 rounded-full flex items-center justify-center border-4 relative ${
+                            selectedAvatar?.id === DEFAULT_PERKS.avatar.id
+                              ? "border-green-300"
+                              : "border-yellow-300"
+                          }`}
+                        >
+                          <img
+                            src={getAvatarById(DEFAULT_PERKS.avatar.id)?.src}
+                            className="w-full h-full object-contain"
+                            alt=""
+                          />
+
+                          {selectedAvatar?.id === DEFAULT_PERKS.avatar.id && (
+                            <div className="w-6 h-6 rounded-full absolute right-0 bottom-0 bg-green-400 flex items-center justify-center text-white">
+                              <Check size={14} />
+                            </div>
+                          )}
+                        </Button>
+                      );
+                    }}
+                  />
+
+                  {user?.availableAvatars?.map((item) => (
                     <form.Subscribe
                       key={item.id}
                       selector={(state) => state.values.image}
@@ -194,24 +235,36 @@ export function EditProfileModal() {
                         return (
                           <Button
                             type="button"
+                            disabled={!item.isUnlocked}
                             onClick={() => {
-                              form.setFieldValue("image", item.id);
+                              if (item.isUnlocked) {
+                                form.setFieldValue("image", item.id);
+                              }
                             }}
                             className={`w-20 m-auto h-20 bg-white hover:bg-gray-100 p-0 rounded-full flex items-center justify-center border-4 relative ${
-                              selectedAvatar?.id === item.id
+                              !item.isUnlocked
+                                ? "border-gray-500"
+                                : selectedAvatar?.id === item.id
                                 ? "border-green-300"
                                 : "border-yellow-300"
                             }`}
                           >
                             <img
-                              src={item.src}
+                              src={getAvatarById(item.id)?.src}
                               className="w-full h-full object-contain"
                               alt=""
                             />
 
-                            {selectedAvatar?.id === item.id && (
+                            {selectedAvatar?.id === item.id &&
+                              item.isUnlocked && (
+                                <div className="w-6 h-6 rounded-full absolute right-0 bottom-0 bg-green-400 flex items-center justify-center text-white">
+                                  <Check size={14} />
+                                </div>
+                              )}
+
+                            {!item.isUnlocked && (
                               <div className="w-6 h-6 rounded-full absolute right-0 bottom-0 bg-green-400 flex items-center justify-center text-white">
-                                <Check size={14} />
+                                <Lock size={14} />
                               </div>
                             )}
                           </Button>
@@ -223,7 +276,37 @@ export function EditProfileModal() {
               </TabsContent>
               <TabsContent value="frame">
                 <div className="grid grid-cols-3 gap-4">
-                  {FRAMES?.map((item) => (
+                  {/* Default Frame */}
+                  <form.Subscribe
+                    selector={(state) => state.values.frame}
+                    children={(selectedFrameId) => {
+                      const selectedFrame = FRAMES?.find(
+                        (item) => item.id === selectedFrameId
+                      );
+
+                      return (
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            form.setFieldValue("frame", DEFAULT_PERKS.frame.id);
+                          }}
+                          className={`w-16 h-16 flex items-center justify-center relative border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5 m-auto`}
+                          style={{
+                            ...getFrameById(DEFAULT_PERKS.frame.id)?.style,
+                            backgroundColor: user.background,
+                          }}
+                        >
+                          {selectedFrame?.id === DEFAULT_PERKS.frame.id && (
+                            <div className="w-6 h-6 rounded-full absolute right-0 bottom-0 bg-green-400 flex items-center justify-center text-white">
+                              <Check size={14} />
+                            </div>
+                          )}
+                        </Button>
+                      );
+                    }}
+                  />
+
+                  {user?.availableFrames?.map((item) => (
                     <form.Subscribe
                       key={item.id}
                       selector={(state) => state.values.frame}
@@ -235,6 +318,7 @@ export function EditProfileModal() {
                         return (
                           <Button
                             type="button"
+                            disabled={!item.isUnlocked}
                             onClick={() => {
                               form.setFieldValue("frame", item.id);
                             }}
@@ -244,9 +328,16 @@ export function EditProfileModal() {
                               backgroundColor: user.background,
                             }}
                           >
-                            {selectedFrame?.id === item.id && (
+                            {selectedFrame?.id === item.id &&
+                              item.isUnlocked && (
+                                <div className="w-6 h-6 rounded-full absolute right-0 bottom-0 bg-green-400 flex items-center justify-center text-white">
+                                  <Check size={14} />
+                                </div>
+                              )}
+
+                            {!item.isUnlocked && (
                               <div className="w-6 h-6 rounded-full absolute right-0 bottom-0 bg-green-400 flex items-center justify-center text-white">
-                                <Check size={14} />
+                                <Lock size={14} />
                               </div>
                             )}
                           </Button>

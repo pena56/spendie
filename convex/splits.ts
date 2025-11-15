@@ -2,6 +2,7 @@ import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { TransactionCategories } from "../src/constants/categories";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { internal } from "./_generated/api";
 
 export const createSplit = mutation({
   args: {
@@ -36,6 +37,10 @@ export const createSplit = mutation({
       date: args.date,
       status: args.participants.length > 1 ? "active" : "pending",
       notes: args.notes,
+    });
+
+    await ctx.scheduler.runAfter(0, internal.achievements.onSplitBillCreated, {
+      userId,
     });
 
     await ctx.db.insert("participants", {
@@ -371,8 +376,9 @@ export const settleParticipantShare = mutation({
       await ctx.db.patch(splitId, { status: "settled" });
     }
 
-    // Optional: Award XP proportional to amount
-    // await api.achievements.awardXp(ctx, { userId, amount: Math.min(amount / fullShare * 20, 20) });
+    await ctx.scheduler.runAfter(0, internal.achievements.onSplitBillSettled, {
+      userId,
+    });
 
     return {
       success: true,

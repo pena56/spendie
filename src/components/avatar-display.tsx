@@ -1,3 +1,4 @@
+import { DEFAULT_PERKS } from "@/constants/prizes";
 import { cn } from "@/lib/utils";
 
 type AvatarDisplayProps = {
@@ -9,8 +10,8 @@ type AvatarDisplayProps = {
 };
 
 export function AvatarDisplay({
-  src,
-  frameStyle,
+  src = DEFAULT_PERKS.avatar.src,
+  frameStyle = DEFAULT_PERKS.frame.style,
   bgColor,
   size = 80,
   className,

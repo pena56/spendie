@@ -2,7 +2,6 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useForm } from "@tanstack/react-form";
 import * as z from "zod";
-import { getCurrency } from "locale-currency";
 
 import {
   Card,
@@ -22,9 +21,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { showErrorMessage } from "@/lib/utils";
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { api } from "convex/_generated/api";
-import { useConvexMutation } from "@convex-dev/react-query";
 
 export const Route = createFileRoute("/auth/register")({
   component: RouteComponent,
@@ -42,17 +38,6 @@ function RouteComponent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: useConvexMutation(api.user.updateUserInfo),
-    onSuccess: () => {
-      form.reset();
-      router.navigate({ to: "/dashboard" });
-    },
-    onError: (err) => {
-      showErrorMessage(err);
-    },
-  });
-
   const form = useForm({
     defaultValues: {
       name: "",
@@ -68,11 +53,8 @@ function RouteComponent() {
 
       signIn("password", value)
         .then(() => {
-          mutate({
-            locale: navigator.language,
-            currency: getCurrency(navigator.language) || "USD",
-            isProfilePublic: false,
-          });
+          form.reset();
+          router.navigate({ to: "/dashboard" });
         })
         .catch((err) => {
           showErrorMessage(err);
@@ -181,7 +163,7 @@ function RouteComponent() {
         </CardContent>
         <CardFooter>
           <Button
-            isLoading={isSubmitting || isPending}
+            isLoading={isSubmitting}
             type="submit"
             form="bug-report-form"
             className="w-full"
