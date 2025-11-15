@@ -30,6 +30,7 @@ import {
   TransactionCategory,
 } from "@/constants/categories";
 import { Textarea } from "../ui/textarea";
+import { AmountDisplay } from "../amount-display";
 
 export type Category = Doc<"budgets">["category"];
 export type BudgetId = Doc<"budgets">["_id"];
@@ -155,7 +156,7 @@ export function BudgetFormModal({
               return (
                 <Field className="leading-none gap-0" data-invalid={isInvalid}>
                   <FieldLabel htmlFor={field.name}>
-                    Budget Limit (NGN)
+                    Budget Limit (<AmountDisplay onlyCurrency />)
                   </FieldLabel>
                   <Input
                     id={field.name}
@@ -218,7 +219,7 @@ export function BudgetFormModal({
             }}
           />
 
-          <div className="w-full flex space-x-4">
+          <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
             <form.Field
               name="periodStart"
               children={(field) => {
@@ -289,7 +290,7 @@ export function BudgetFormModal({
                   <Textarea
                     id={field.name}
                     name={field.name}
-                    placeholder="Optional note for transaction"
+                    placeholder="Optional note for budget"
                     value={field.state.value}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}

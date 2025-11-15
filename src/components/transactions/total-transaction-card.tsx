@@ -1,5 +1,5 @@
-import { formatCurrency } from "@/lib/utils";
 import { TrendingDown, TrendingUp } from "lucide-react";
+import { AmountDisplay } from "../amount-display";
 
 interface TotalTransactionCardProps {
   type: "income" | "expense";
@@ -29,7 +29,9 @@ export function TotalTransactionCard({
           <Icon className="w-5 h-5" />
         </div>
       </div>
-      <p className="text-3xl font-black">{formatCurrency(amount)}</p>
+      <p className="text-3xl font-black">
+        <AmountDisplay amount={amount} />
+      </p>
       <p className={`text-sm font-bold ${percentColor}`}>
         {changePercent >= 0 ? `+${changePercent}%` : `${changePercent}%`} from
         last month

@@ -24,7 +24,7 @@ function RouteComponent() {
         <p className="font-semibold">{greeting.motivation}</p>
       </div>
 
-      <InsightCards data={data?.insights?.insights} />
+      {/* <InsightCards data={data?.insights?.insights} /> */}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
         <RecentTransactions data={data?.transactions} />

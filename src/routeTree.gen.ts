@@ -14,10 +14,12 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRegisterRouteImport } from './routes/auth/register'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as PrivateTransactionsRouteImport } from './routes/_private.transactions'
+import { Route as PrivateSplitsRouteImport } from './routes/_private.splits'
+import { Route as PrivateProfileRouteImport } from './routes/_private.profile'
 import { Route as PrivateNotificationsRouteImport } from './routes/_private.notifications'
-import { Route as PrivateGoalsRouteImport } from './routes/_private.goals'
 import { Route as PrivateDashboardRouteImport } from './routes/_private.dashboard'
 import { Route as PrivateBudgetsRouteImport } from './routes/_private.budgets'
+import { Route as PrivateAchievementsRouteImport } from './routes/_private.achievements'
 
 const PrivateRoute = PrivateRouteImport.update({
   id: '/_private',
@@ -43,14 +45,19 @@ const PrivateTransactionsRoute = PrivateTransactionsRouteImport.update({
   path: '/transactions',
   getParentRoute: () => PrivateRoute,
 } as any)
+const PrivateSplitsRoute = PrivateSplitsRouteImport.update({
+  id: '/splits',
+  path: '/splits',
+  getParentRoute: () => PrivateRoute,
+} as any)
+const PrivateProfileRoute = PrivateProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => PrivateRoute,
+} as any)
 const PrivateNotificationsRoute = PrivateNotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
-  getParentRoute: () => PrivateRoute,
-} as any)
-const PrivateGoalsRoute = PrivateGoalsRouteImport.update({
-  id: '/goals',
-  path: '/goals',
   getParentRoute: () => PrivateRoute,
 } as any)
 const PrivateDashboardRoute = PrivateDashboardRouteImport.update({
@@ -63,23 +70,32 @@ const PrivateBudgetsRoute = PrivateBudgetsRouteImport.update({
   path: '/budgets',
   getParentRoute: () => PrivateRoute,
 } as any)
+const PrivateAchievementsRoute = PrivateAchievementsRouteImport.update({
+  id: '/achievements',
+  path: '/achievements',
+  getParentRoute: () => PrivateRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/achievements': typeof PrivateAchievementsRoute
   '/budgets': typeof PrivateBudgetsRoute
   '/dashboard': typeof PrivateDashboardRoute
-  '/goals': typeof PrivateGoalsRoute
   '/notifications': typeof PrivateNotificationsRoute
+  '/profile': typeof PrivateProfileRoute
+  '/splits': typeof PrivateSplitsRoute
   '/transactions': typeof PrivateTransactionsRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/achievements': typeof PrivateAchievementsRoute
   '/budgets': typeof PrivateBudgetsRoute
   '/dashboard': typeof PrivateDashboardRoute
-  '/goals': typeof PrivateGoalsRoute
   '/notifications': typeof PrivateNotificationsRoute
+  '/profile': typeof PrivateProfileRoute
+  '/splits': typeof PrivateSplitsRoute
   '/transactions': typeof PrivateTransactionsRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
@@ -88,10 +104,12 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_private': typeof PrivateRouteWithChildren
+  '/_private/achievements': typeof PrivateAchievementsRoute
   '/_private/budgets': typeof PrivateBudgetsRoute
   '/_private/dashboard': typeof PrivateDashboardRoute
-  '/_private/goals': typeof PrivateGoalsRoute
   '/_private/notifications': typeof PrivateNotificationsRoute
+  '/_private/profile': typeof PrivateProfileRoute
+  '/_private/splits': typeof PrivateSplitsRoute
   '/_private/transactions': typeof PrivateTransactionsRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
@@ -100,20 +118,24 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/achievements'
     | '/budgets'
     | '/dashboard'
-    | '/goals'
     | '/notifications'
+    | '/profile'
+    | '/splits'
     | '/transactions'
     | '/auth/login'
     | '/auth/register'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/achievements'
     | '/budgets'
     | '/dashboard'
-    | '/goals'
     | '/notifications'
+    | '/profile'
+    | '/splits'
     | '/transactions'
     | '/auth/login'
     | '/auth/register'
@@ -121,10 +143,12 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_private'
+    | '/_private/achievements'
     | '/_private/budgets'
     | '/_private/dashboard'
-    | '/_private/goals'
     | '/_private/notifications'
+    | '/_private/profile'
+    | '/_private/splits'
     | '/_private/transactions'
     | '/auth/login'
     | '/auth/register'
@@ -174,18 +198,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateTransactionsRouteImport
       parentRoute: typeof PrivateRoute
     }
+    '/_private/splits': {
+      id: '/_private/splits'
+      path: '/splits'
+      fullPath: '/splits'
+      preLoaderRoute: typeof PrivateSplitsRouteImport
+      parentRoute: typeof PrivateRoute
+    }
+    '/_private/profile': {
+      id: '/_private/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof PrivateProfileRouteImport
+      parentRoute: typeof PrivateRoute
+    }
     '/_private/notifications': {
       id: '/_private/notifications'
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof PrivateNotificationsRouteImport
-      parentRoute: typeof PrivateRoute
-    }
-    '/_private/goals': {
-      id: '/_private/goals'
-      path: '/goals'
-      fullPath: '/goals'
-      preLoaderRoute: typeof PrivateGoalsRouteImport
       parentRoute: typeof PrivateRoute
     }
     '/_private/dashboard': {
@@ -202,22 +233,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateBudgetsRouteImport
       parentRoute: typeof PrivateRoute
     }
+    '/_private/achievements': {
+      id: '/_private/achievements'
+      path: '/achievements'
+      fullPath: '/achievements'
+      preLoaderRoute: typeof PrivateAchievementsRouteImport
+      parentRoute: typeof PrivateRoute
+    }
   }
 }
 
 interface PrivateRouteChildren {
+  PrivateAchievementsRoute: typeof PrivateAchievementsRoute
   PrivateBudgetsRoute: typeof PrivateBudgetsRoute
   PrivateDashboardRoute: typeof PrivateDashboardRoute
-  PrivateGoalsRoute: typeof PrivateGoalsRoute
   PrivateNotificationsRoute: typeof PrivateNotificationsRoute
+  PrivateProfileRoute: typeof PrivateProfileRoute
+  PrivateSplitsRoute: typeof PrivateSplitsRoute
   PrivateTransactionsRoute: typeof PrivateTransactionsRoute
 }
 
 const PrivateRouteChildren: PrivateRouteChildren = {
+  PrivateAchievementsRoute: PrivateAchievementsRoute,
   PrivateBudgetsRoute: PrivateBudgetsRoute,
   PrivateDashboardRoute: PrivateDashboardRoute,
-  PrivateGoalsRoute: PrivateGoalsRoute,
   PrivateNotificationsRoute: PrivateNotificationsRoute,
+  PrivateProfileRoute: PrivateProfileRoute,
+  PrivateSplitsRoute: PrivateSplitsRoute,
   PrivateTransactionsRoute: PrivateTransactionsRoute,
 }
 

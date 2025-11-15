@@ -15,6 +15,10 @@ export const generateInsightsInternal = internalAction({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new ConvexError("User not authenticated");
 
+    // Fetch user with currency
+    const user = await ctx.runQuery(api.user.getCurrentUser);
+    const currency = user?.currency || "USD";
+
     const now = Date.now();
     const threeMonthsAgo = now - 3 * 30 * 24 * 60 * 60 * 1000;
     const transactions = await ctx.runQuery(
@@ -64,7 +68,15 @@ export const generateInsightsInternal = internalAction({
       apiKey: process.env.GEMINI_API_KEY!,
     });
 
-    const basePrompt = `General saving tips: ${tipsExtract}. Generate 3 personalized smart insights: Tailor to user, actionable, positive, concise. Format as JSON array: [{ "title": "Tip Title", "description": "Brief explanation", "category": "food/saving/etc", "impact": "Save $X/month" }] Respond ONLY with the JSON array.`;
+    const basePrompt = `
+      General saving tips: ${tipsExtract}. 
+      User currency: ${currency}. 
+      Generate 3 personalized smart insights: Tailor to user, actionable, positive, concise. 
+      Use percentages/relative terms only (no specific amounts like $X). 
+      If suggesting a savings/budgeting/expense tracker app or feature, mention SPENDIE as the user's app.
+      Format as JSON array: [{ "title": "Tip Title", "description": "Brief explanation", "category": "food/saving/etc", "impact": "Reduce by X% to save more" }]. 
+      Respond ONLY with the JSON array.
+    `;
 
     const prompt = isNewUser
       ? `${basePrompt} For a new user with no transactions: Provide beginner/generalized tips.`

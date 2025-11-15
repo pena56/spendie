@@ -3,10 +3,10 @@ import { Button } from "../ui/button";
 import { FunctionReturnType } from "convex/server";
 import { api } from "convex/_generated/api";
 import { Progress } from "../ui/progress";
-import { formatCurrency } from "@/lib/utils";
+import { AmountDisplay } from "../amount-display";
 
 interface BudgetsOverviewProps {
-  data?: FunctionReturnType<typeof api.dashboard.getDashboard>["budgets"];
+  data?: FunctionReturnType<typeof api.dashboard.getDashboardData>["budgets"];
 }
 
 export default function BudgetsOverview({ data }: BudgetsOverviewProps) {
@@ -50,7 +50,8 @@ function BudgetOverviewCard({ ...props }: BudgetOverviewCardProps) {
       <div className="flex justify-between leading-none">
         <p className="font-bold">{props.category}</p>
         <p className="font-black text-sm">
-          {formatCurrency(props.spent)} / {formatCurrency(props.limit)}
+          <AmountDisplay amount={props.spent} /> /{" "}
+          <AmountDisplay amount={props.limit} />
         </p>
       </div>
 

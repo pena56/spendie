@@ -371,6 +371,11 @@ export const getPreviousTransactions = query({
     date: v.number(),
   },
   handler: async (ctx, { date, userId }) => {
+    const authUserId = await getAuthUserId(ctx);
+    if (authUserId !== userId) {
+      throw new ConvexError("Unauthorized");
+    }
+
     const transactions = await ctx.db
       .query("transactions")
       .withIndex("by_user_date", (q) =>

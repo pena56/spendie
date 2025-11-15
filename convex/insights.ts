@@ -53,7 +53,7 @@ export const insertInsights = mutation({
     generatedAt: v.number(),
     isActive: v.boolean(),
   },
-  handler(ctx, { generatedAt, insights, isActive, userId }) {
+  handler(ctx, { generatedAt, insights, userId }) {
     return ctx.db.insert("insights", {
       userId,
       insights,

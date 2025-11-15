@@ -11,7 +11,7 @@ Sentry.init({
   integrations: [Sentry.replayIntegration()],
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
-  sendDefaultPii: true,
+  sendDefaultPii: false,
 });
 
 export function getRouter() {

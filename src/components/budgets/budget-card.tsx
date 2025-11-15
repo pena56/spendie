@@ -10,7 +10,8 @@ import { DeleteConfirmationModal } from "../delete-confirmation-modal";
 import { useMutation } from "@tanstack/react-query";
 import { useConvexMutation } from "@convex-dev/react-query";
 import { toast } from "sonner";
-import { formatCurrency, showErrorMessage } from "@/lib/utils";
+import { showErrorMessage } from "@/lib/utils";
+import { AmountDisplay } from "../amount-display";
 
 export type ActiveBudgets = FunctionReturnType<
   typeof api.budgets.getActiveBudgets
@@ -52,7 +53,8 @@ export function BudgetCard({ data }: BudgetCardProps) {
           <div>
             <h3 className="text-xl font-black">{data.category}</h3>
             <p className="text-sm font-bold text-black">
-              {formatCurrency(data.spent)} / {formatCurrency(data.limit)}
+              <AmountDisplay amount={data.spent} /> /{" "}
+              <AmountDisplay amount={data.limit} />
             </p>
           </div>
         </div>

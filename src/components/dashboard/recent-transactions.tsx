@@ -3,10 +3,12 @@ import { Button } from "../ui/button";
 import { FunctionReturnType } from "convex/server";
 import { api } from "convex/_generated/api";
 import { TransactionCategories } from "@/constants/categories";
-import { formatCurrency } from "@/lib/utils";
+import { AmountDisplay } from "../amount-display";
 
 interface RecentTransactionsProps {
-  data?: FunctionReturnType<typeof api.dashboard.getDashboard>["transactions"];
+  data?: FunctionReturnType<
+    typeof api.dashboard.getDashboardData
+  >["transactions"];
 }
 
 export default function RecentTransactions({ data }: RecentTransactionsProps) {
@@ -31,7 +33,7 @@ export default function RecentTransactions({ data }: RecentTransactionsProps) {
 
 interface RecentTransactionCardProps {
   data?: FunctionReturnType<
-    typeof api.dashboard.getDashboard
+    typeof api.dashboard.getDashboardData
   >["transactions"][0];
 }
 
@@ -58,7 +60,7 @@ function RecentTransactionCard({ data }: RecentTransactionCardProps) {
           data.type === "income" ? "text-green-600" : "text-red-600"
         }`}
       >
-        {formatCurrency(data.amount)}
+        <AmountDisplay amount={data.amount} />
       </p>
     </div>
   );

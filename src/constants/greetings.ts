@@ -83,8 +83,13 @@ export const greetings: Greeting[] = [
 ];
 
 export const getDailyGreeting = (): Greeting => {
-  const dayOfYear = Math.floor(
-    (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000
+  const now = new Date();
+  const startOfYearUTC = Date.UTC(now.getUTCFullYear(), 0, 1);
+  const todayUTC = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate()
   );
+  const dayOfYear = Math.floor((todayUTC - startOfYearUTC) / 86400000);
   return greetings[dayOfYear % greetings.length];
 };

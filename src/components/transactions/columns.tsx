@@ -14,13 +14,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TransactionCategories } from "@/constants/categories";
-import { formatCurrency, formatDate, showErrorMessage } from "@/lib/utils";
+import { formatDate, showErrorMessage } from "@/lib/utils";
 import { useState } from "react";
 import { DeleteConfirmationModal } from "../delete-confirmation-modal";
 import { useMutation } from "@tanstack/react-query";
 import { useConvexMutation } from "@convex-dev/react-query";
 import { toast } from "sonner";
 import { TransactionFormModal } from "./transaction-form-modal";
+import { AmountDisplay } from "../amount-display";
 
 type TransactionsResult = FunctionReturnType<
   typeof api.transactions.getTransactions
@@ -147,7 +148,7 @@ export const columns: ColumnDef<TransactionType>[] = [
           }`}
         >
           {transaction.type === "income" ? "+" : "-"}
-          {formatCurrency(amount)}
+          <AmountDisplay amount={amount} />
         </div>
       );
     },

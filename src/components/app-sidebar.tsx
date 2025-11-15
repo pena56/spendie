@@ -12,25 +12,27 @@ import {
   SidebarMenuSkeleton,
 } from "@/components/ui/sidebar";
 import {
-  Bell,
-  ChevronUp,
   Home,
+  LogOut,
   PiggyBank,
+  Split,
   Target,
+  Trophy,
+  User,
   WalletMinimal,
-  Zap,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
 import { Link, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { convexQuery } from "@convex-dev/react-query";
 import { api } from "convex/_generated/api";
 import { useAuthActions } from "@convex-dev/auth/react";
+import {
+  getAvatarById,
+  getBackgroundById,
+  getFrameById,
+} from "@/constants/prizes";
+import { AvatarDisplay } from "./avatar-display";
+import { Progress } from "./ui/progress";
 
 const items = [
   {
@@ -49,14 +51,19 @@ const items = [
     icon: Target,
   },
   {
-    title: "Goals",
-    url: "/goals",
-    icon: PiggyBank,
+    title: "Split Bills",
+    url: "/splits",
+    icon: Split,
   },
   {
-    title: "Notifications",
-    url: "/notifications",
-    icon: Bell,
+    title: "Achievements",
+    url: "/achievements",
+    icon: Trophy,
+  },
+  {
+    title: "Profile",
+    url: "/profile",
+    icon: User,
   },
 ];
 
@@ -110,11 +117,11 @@ export function AppSidebar() {
                       className="rounded-sm"
                       activeProps={{
                         className:
-                          "bg-yellow-300 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] translate-x-[-2px] translate-y-[-2px] font-semibold",
+                          "bg-yellow-300 hover:bg-yellow-300 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5 font-semibold",
                       }}
                       inactiveProps={{
                         className:
-                          "bg-gray-50 border-2 border-transparent hover:border-black hover:translate-x-[-1px] hover:translate-y-[-1px] font-medium",
+                          "bg-gray-50 border-2 border-transparent hover:border-black hover:-translate-x-0.5 hover:-translate-y-0.5 font-medium",
                       }}
                     >
                       <item.icon />
@@ -124,10 +131,26 @@ export function AppSidebar() {
                   </SidebarMenuButton>
 
                   {item.url === "/notifications" && (
-                    <SidebarMenuBadge>24</SidebarMenuBadge>
+                    <SidebarMenuBadge className="w-5 h-5 rounded-full flex items-center justify-center leading-none bg-red-400 border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5 text-xs font-black">
+                      24
+                    </SidebarMenuBadge>
                   )}
                 </SidebarMenuItem>
               ))}
+
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={async () => {
+                    await signOut();
+                    router.navigate({ to: "/auth/login" });
+                  }}
+                  className="bg-gray-50 border-2 border-transparent hover:border-black hover:-translate-x-0.5 hover:-translate-y-0.5 font-medium"
+                >
+                  <LogOut />
+
+                  <span className="text-lg">Sign out</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -136,54 +159,30 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton className="text-lg font-semibold rounded-sm h-fit border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5">
-                  <div className="w-16 h-16 flex items-center justify-center relative overflow-hidden rounded-full bg-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5">
-                    <img
-                      src="/avatars/1.svg"
-                      className="w-full h-full object-cover absolute"
-                      alt=""
-                    />
+            <SidebarMenuButton className="text-lg font-semibold rounded-sm h-fit border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5">
+              <AvatarDisplay
+                src={getAvatarById(user.image)?.src}
+                bgColor={getBackgroundById(user.background)?.color}
+                frameStyle={getFrameById(user.frame)?.style}
+                size={64}
+              />
+
+              <div className="flex flex-col leading-none gap-0 w-full">
+                <p>{user?.name}</p>
+
+                <div className="flex items-center gap-2">
+                  <Progress value={5} />
+
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center bg-yellow-300 shrink-0 font-black leading-none border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5">
+                    2
                   </div>
+                </div>
 
-                  <div className="flex flex-col leading-none gap-0">
-                    <p>{user?.name}</p>
-
-                    <div className="flex items-center">
-                      <Zap width={16} height={16} />
-
-                      <p className="text-sm">2000 XP</p>
-                    </div>
-                  </div>
-
-                  <ChevronUp className="ml-auto" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                side="top"
-                className="w-[200px] border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5"
-              >
-                <DropdownMenuItem className="bg-gray-50 border-2 border-transparent hover:border-black hover:-translate-x-px hover:-translate-y-px font-medium">
-                  <span>Account</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="bg-gray-50 border-2 border-transparent hover:border-black hover:-translate-x-px hover:-translate-y-px font-medium">
-                  <span>Achievements</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="bg-gray-50 border-2 border-transparent hover:border-black hover:-translate-x-px hover:-translate-y-px font-medium">
-                  <span>Insights</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    void signOut();
-                    router.navigate({ to: "/auth/login" });
-                  }}
-                  className="bg-gray-50 border-2 border-transparent hover:border-black hover:-translate-x-px hover:-translate-y-px font-medium"
-                >
-                  <span>Sign out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                <div className="flex items-center">
+                  <p className="text-sm"> {user?.totalXP} / 2000 XP</p>
+                </div>
+              </div>
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

@@ -31,6 +31,7 @@ import {
   TransactionCategory,
 } from "@/constants/categories";
 import { Textarea } from "../ui/textarea";
+import { AmountDisplay } from "../amount-display";
 
 export type Category = Doc<"transactions">["category"];
 export type TransactionType = Doc<"transactions">["type"];
@@ -180,7 +181,9 @@ export function TransactionFormModal({
                       className="leading-none gap-0"
                       data-invalid={isInvalid}
                     >
-                      <FieldLabel htmlFor={field.name}>Amount (NGN)</FieldLabel>
+                      <FieldLabel htmlFor={field.name}>
+                        Amount (<AmountDisplay onlyCurrency />)
+                      </FieldLabel>
                       <Input
                         id={field.name}
                         name={field.name}
@@ -372,7 +375,9 @@ export function TransactionFormModal({
                       className="leading-none gap-0"
                       data-invalid={isInvalid}
                     >
-                      <FieldLabel htmlFor={field.name}>Amount (NGN)</FieldLabel>
+                      <FieldLabel htmlFor={field.name}>
+                        Amount (<AmountDisplay onlyCurrency />)
+                      </FieldLabel>
                       <Input
                         id={field.name}
                         name={field.name}

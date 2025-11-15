@@ -15,7 +15,7 @@ export function InsightCards({ data }: InsightCardProps) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 ">
-      {data?.map((item, index) => (
+      {data?.slice(0, 3)?.map((item, index) => (
         <div
           key={index}
           className={`${bgColors[index]} border-2 border-black rounded-sm p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]`}
