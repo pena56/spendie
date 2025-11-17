@@ -1,9 +1,10 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
 import { Button } from "../ui/button";
 import { FunctionReturnType } from "convex/server";
 import { api } from "convex/_generated/api";
 import { TransactionCategories } from "@/constants/categories";
 import { AmountDisplay } from "../amount-display";
+import { EmptyState } from "../empty-state";
 
 interface RecentTransactionsProps {
   data?: FunctionReturnType<
@@ -12,20 +13,33 @@ interface RecentTransactionsProps {
 }
 
 export default function RecentTransactions({ data }: RecentTransactionsProps) {
+  const router = useRouter();
+
   return (
     <div className="border-2 border-black rounded-sm p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all flex flex-col space-y-4">
       <div className="flex items-center justify-between">
         <p className="font-black text-xl">Recent Transactions</p>
 
-        <Link to="/transactions">
-          <Button variant={"link"}>View all</Button>
-        </Link>
+        {data && data?.length > 0 && (
+          <Link to="/transactions">
+            <Button variant={"link"}>View all</Button>
+          </Link>
+        )}
       </div>
 
       <div className="flex flex-col space-y-2">
-        {data?.map((item) => (
-          <RecentTransactionCard key={item._id} data={item} />
-        ))}
+        {data?.length === 0 ? (
+          <EmptyState
+            btnLabel="Add Transaction"
+            description="No recent transactions available"
+            title="No transaction"
+            onBtnClick={() => router.navigate({ to: "/transactions" })}
+          />
+        ) : (
+          data?.map((item) => (
+            <RecentTransactionCard key={item._id} data={item} />
+          ))
+        )}
       </div>
     </div>
   );

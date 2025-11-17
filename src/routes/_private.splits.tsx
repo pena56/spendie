@@ -1,4 +1,6 @@
+import { EmptyState } from "@/components/empty-state";
 import Layout from "@/components/layout";
+import { LoadingScreen } from "@/components/loading-screen";
 import { AddSplitsButton } from "@/components/splits/add-splits-button";
 import { PendingInvites } from "@/components/splits/pending-invites";
 import { SplitCard } from "@/components/splits/split-card";
@@ -13,28 +15,43 @@ export const Route = createFileRoute("/_private/splits")({
 });
 
 function RouteComponent() {
-  const { data } = useQuery(convexQuery(api.splits.getUserSplits, {}));
+  const { data, isLoading } = useQuery(
+    convexQuery(api.splits.getUserSplits, {})
+  );
 
   return (
     <Layout title="Split Bills">
-      <TotalSplitsCard
-        completedAmount={data?.completedSettlements}
-        pendingAmount={data?.pendingSettlement}
-      />
+      {isLoading ? (
+        <LoadingScreen title="Loading your split bills..." />
+      ) : (
+        <>
+          <TotalSplitsCard
+            completedAmount={data?.completedSettlements}
+            pendingAmount={data?.pendingSettlement}
+          />
 
-      <PendingInvites invites={data?.pendingInvites} />
+          <PendingInvites invites={data?.pendingInvites} />
 
-      <div>
-        <h2 className="text-xl font-bold mb-2">Active Split Bills</h2>
+          {data?.splits?.length === 0 ? (
+            <EmptyState
+              title="No split bills"
+              description="You've not created any split bills yet."
+            />
+          ) : (
+            <div>
+              <h2 className="text-xl font-bold mb-2">Active Split Bills</h2>
 
-        <div className="flex flex-col gap-6">
-          {data?.splits?.map((item) => (
-            <SplitCard key={item?.id} data={item} />
-          ))}
-        </div>
-      </div>
+              <div className="flex flex-col gap-6">
+                {data?.splits?.map((item) => (
+                  <SplitCard key={item?.id} data={item} />
+                ))}
+              </div>
+            </div>
+          )}
 
-      <AddSplitsButton />
+          <AddSplitsButton />
+        </>
+      )}
     </Layout>
   );
 }

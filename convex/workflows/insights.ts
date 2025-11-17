@@ -42,7 +42,7 @@ export const generateInsightsWorkflow = workflow.define({
     await step.runMutation(internal.workflows.insightsHelpers.updateStatus, {
       userId: args.userId,
       workflowId: step.workflowId,
-      status: "Getting insights from top dining trends...",
+      status: "Getting insights from top financial trends...",
       progress: 30,
     });
 
@@ -56,7 +56,7 @@ export const generateInsightsWorkflow = workflow.define({
     await step.runMutation(internal.workflows.insightsHelpers.updateStatus, {
       userId: args.userId,
       workflowId: step.workflowId,
-      status: "Comparing your dining expenses...",
+      status: "Comparing your expenses...",
       progress: 50,
     });
 
@@ -107,23 +107,23 @@ export const startInsightGeneration = mutation({
     if (!userId) throw new ConvexError("Not authenticated");
 
     // Check if there's already a recent insight (within last 24 hours)
-    const recentInsight = await ctx.db
-      .query("insights")
-      .withIndex("by_user_active", (q) =>
-        q.eq("userId", userId).eq("isActive", true)
-      )
-      .first();
+    // const recentInsight = await ctx.db
+    //   .query("insights")
+    //   .withIndex("by_user_active", (q) =>
+    //     q.eq("userId", userId).eq("isActive", true)
+    //   )
+    //   .first();
 
-    if (recentInsight) {
-      const hoursSinceGeneration =
-        (Date.now() - recentInsight.generatedAt) / (1000 * 60 * 60);
+    // if (recentInsight) {
+    //   const hoursSinceGeneration =
+    //     (Date.now() - recentInsight.generatedAt) / (1000 * 60 * 60);
 
-      if (hoursSinceGeneration < 24) {
-        throw new ConvexError(
-          "You can only generate insights once every 24 hours. Please try again later."
-        );
-      }
-    }
+    //   if (hoursSinceGeneration < 24) {
+    //     throw new ConvexError(
+    //       "You can only generate insights once every 24 hours. Please try again later."
+    //     );
+    //   }
+    // }
 
     // Start the workflow
     const workflowId = await workflow.start(

@@ -43,7 +43,15 @@ const FINANCIAL_TIPS = [
   },
 ];
 
-export function LoadingScreen() {
+interface LoadingScreenProps {
+  hideTips?: boolean;
+  title?: string;
+}
+
+export function LoadingScreen({
+  hideTips = true,
+  title = "Loading your finances...",
+}: LoadingScreenProps) {
   const tip = FINANCIAL_TIPS[Math.floor(Math.random() * FINANCIAL_TIPS.length)];
 
   return (
@@ -53,54 +61,60 @@ export function LoadingScreen() {
         <div className="flex flex-col items-center space-y-6">
           <div className="relative">
             {/* Animated logo container */}
-            <div className="w-24 h-24 rounded-2xl bg-linear-to-br from-yellow-300 to-amber-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5 flex items-center justify-center animate-pulse">
+            <div className="w-24 h-24 rounded-sm bg-linear-to-br from-yellow-300 to-amber-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5 flex items-center justify-center animate-pulse">
               <PiggyBank className="w-12 h-12 text-black" />
             </div>
             {/* Spinning ring */}
-            <div className="absolute inset-0 rounded-2xl border-4 border-transparent border-t-yellow-400 border-r-yellow-300 animate-spin" />
+            <div className="absolute inset-0 rounded-sm border-4 border-transparent border-t-yellow-400 border-r-yellow-300 animate-spin" />
           </div>
 
           <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
             SPENDIE
           </h1>
           <p className="text-gray-600 text-center text-lg font-medium">
-            Loading your finances...
+            {title}
           </p>
         </div>
 
-        {/* Animated loading bars */}
-        <div className="w-full space-y-2">
-          <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-            <div className="h-full bg-yellow-400 rounded-full animate-[shimmer_2s_infinite] w-full" />
-          </div>
-          <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-            <div className="h-full bg-green-400 rounded-full animate-[shimmer_2s_infinite_0.4s] w-3/4" />
-          </div>
-          <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-            <div className="h-full bg-pink-400 rounded-full animate-[shimmer_2s_infinite_0.8s] w-1/2" />
-          </div>
-        </div>
-
-        {/* Financial Tip Section */}
-        {tip && (
-          <div className="w-full bg-white rounded-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5 p-6 border-2 border-gray-900 space-y-3 animate-fade-in">
-            <div className="text-lg font-bold text-gray-900">{tip.title}</div>
-            <p className="text-gray-700 leading-relaxed text-sm">
-              {tip.content}
-            </p>
-            <div className="pt-2 text-xs text-gray-500 flex items-center gap-1">
-              <span className="inline-block w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse" />
-              Tip of the moment
+        {!hideTips && (
+          <>
+            {/* Animated loading bars */}
+            <div className="w-full space-y-2">
+              <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                <div className="h-full bg-yellow-400 rounded-full animate-[shimmer_2s_infinite] w-full" />
+              </div>
+              <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                <div className="h-full bg-green-400 rounded-full animate-[shimmer_2s_infinite_0.4s] w-3/4" />
+              </div>
+              <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                <div className="h-full bg-pink-400 rounded-full animate-[shimmer_2s_infinite_0.8s] w-1/2" />
+              </div>
             </div>
-          </div>
-        )}
 
-        {/* Loading dots */}
-        <div className="flex items-center justify-center gap-2">
-          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100" />
-          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200" />
-        </div>
+            {/* Financial Tip Section */}
+            {tip && (
+              <div className="w-full bg-white rounded-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5 p-6 border-2 border-gray-900 space-y-3 animate-fade-in">
+                <div className="text-lg font-bold text-gray-900">
+                  {tip.title}
+                </div>
+                <p className="text-gray-700 leading-relaxed text-sm">
+                  {tip.content}
+                </p>
+                <div className="pt-2 text-xs text-gray-500 flex items-center gap-1">
+                  <span className="inline-block w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse" />
+                  Tip of the moment
+                </div>
+              </div>
+            )}
+
+            {/* Loading dots */}
+            <div className="flex items-center justify-center gap-2">
+              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100" />
+              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200" />
+            </div>
+          </>
+        )}
       </div>
 
       <style>{`

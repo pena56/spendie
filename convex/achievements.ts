@@ -1,9 +1,8 @@
 // convex/achievements.ts
 import { v } from "convex/values";
-import { internalMutation, mutation, query } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
-import { internal } from "./_generated/api";
+import { internalMutation } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
+import { authenticatedQuery } from "./lib/authHelpers";
 
 // ============================================
 // CONFIGURATION: XP Actions & Levels
@@ -30,6 +29,7 @@ export const XP_REWARDS = {
   CREATE_SPLIT_BILL: 20,
   SETTLE_SPLIT_BILL: 25,
   INVITE_FRIEND: 15,
+  ACCEPT_INVITE: 30,
 
   // Engagement
   DAILY_LOGIN: 5,
@@ -355,6 +355,40 @@ export const onSplitBillSettled = internalMutation({
 });
 
 /**
+ * Called when user invites participant
+ */
+export const onSplitBillInvite = internalMutation({
+  args: {
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    await awardXPInternal(
+      ctx,
+      args.userId,
+      XP_REWARDS.INVITE_FRIEND,
+      "Invited particapant to a split bill"
+    );
+  },
+});
+
+/**
+ * Called when user invites participant
+ */
+export const onAcceptSplitBillInvite = internalMutation({
+  args: {
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    await awardXPInternal(
+      ctx,
+      args.userId,
+      XP_REWARDS.ACCEPT_INVITE,
+      "Accepted invite to a split bill"
+    );
+  },
+});
+
+/**
  * Called on daily login
  */
 export const onDailyLogin = internalMutation({
@@ -382,11 +416,10 @@ export const onDailyLogin = internalMutation({
 /**
  * Get user's XP progress and achievements
  */
-export const getUserProgress = query({
+export const getUserProgress = authenticatedQuery({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) return null;
+    const { userId } = ctx;
 
     const user = await ctx.db.get(userId);
     if (!user) return null;
@@ -441,11 +474,10 @@ export const getUserProgress = query({
 /**
  * Get all available perks (avatars & frames)
  */
-export const getAvailablePerks = query({
+export const getAvailablePerks = authenticatedQuery({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) return null;
+    const { userId } = ctx;
 
     const user = await ctx.db.get(userId);
     if (!user) return null;

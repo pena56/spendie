@@ -9,7 +9,6 @@ import {
   SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSkeleton,
 } from "@/components/ui/sidebar";
 import {
   Home,
@@ -68,29 +67,15 @@ const items = [
 ];
 
 export function AppSidebar() {
-  const { data: user, isLoading } = useQuery(
-    convexQuery(api.user.getCurrentUser, {})
+  const { data: user } = useQuery(convexQuery(api.user.getCurrentUser, {}));
+
+  const { data: pendingInvites } = useQuery(
+    convexQuery(api.splits.getUserPendingInvites, {})
   );
 
   const { signOut } = useAuthActions();
 
   const router = useRouter();
-
-  if (isLoading) {
-    return (
-      <SidebarMenu>
-        {items.map((_, index) => (
-          <SidebarMenuItem key={index}>
-            <SidebarMenuSkeleton showIcon />
-          </SidebarMenuItem>
-        ))}
-      </SidebarMenu>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
 
   return (
     <Sidebar className="border-black border-2">
@@ -130,11 +115,13 @@ export function AppSidebar() {
                     </Link>
                   </SidebarMenuButton>
 
-                  {item.url === "/notifications" && (
-                    <SidebarMenuBadge className="w-5 h-5 rounded-full flex items-center justify-center leading-none bg-red-400 border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5 text-xs font-black">
-                      24
+                  {item.url === "/splits" &&
+                  pendingInvites &&
+                  pendingInvites > 0 ? (
+                    <SidebarMenuBadge className="w-5 h-5 rounded-full flex items-center justify-center leading-none bg-yellow-300 border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5 text-xs font-black animate-bounce">
+                      {pendingInvites}
                     </SidebarMenuBadge>
-                  )}
+                  ) : null}
                 </SidebarMenuItem>
               ))}
 
@@ -156,39 +143,41 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton className="text-lg font-semibold rounded-sm h-fit border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5">
-              <AvatarDisplay
-                src={getAvatarById(user.image)?.src}
-                bgColor={getBackgroundById(user.background)?.color}
-                frameStyle={getFrameById(user.frame)?.style}
-                size={64}
-              />
+      {user && (
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton className="text-lg font-semibold rounded-sm h-fit border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5">
+                <AvatarDisplay
+                  src={getAvatarById(user.image)?.src}
+                  bgColor={getBackgroundById(user.background)?.color}
+                  frameStyle={getFrameById(user.frame)?.style}
+                  size={64}
+                />
 
-              <div className="flex flex-col leading-none gap-0 w-full">
-                <p>{user?.name}</p>
+                <div className="flex flex-col leading-none gap-0 w-full">
+                  <p>{user?.name}</p>
 
-                <div className="flex items-center gap-2">
-                  <Progress value={user?.percentageProgress} />
+                  <div className="flex items-center gap-2">
+                    <Progress value={user?.percentageProgress} />
 
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center bg-yellow-300 shrink-0 font-black leading-none border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5">
-                    {user?.level}
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-yellow-300 shrink-0 font-black leading-none border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5">
+                      {user?.level}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center">
+                    <p className="text-sm">
+                      {" "}
+                      {user?.totalXP} / {user?.xpForNextLevel} XP
+                    </p>
                   </div>
                 </div>
-
-                <div className="flex items-center">
-                  <p className="text-sm">
-                    {" "}
-                    {user?.totalXP} / {user?.xpForNextLevel} XP
-                  </p>
-                </div>
-              </div>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      )}
     </Sidebar>
   );
 }

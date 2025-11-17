@@ -1,35 +1,49 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
 import { Button } from "../ui/button";
 import { FunctionReturnType } from "convex/server";
 import { api } from "convex/_generated/api";
 import { Progress } from "../ui/progress";
 import { AmountDisplay } from "../amount-display";
+import { EmptyState } from "../empty-state";
 
 interface BudgetsOverviewProps {
   data?: FunctionReturnType<typeof api.dashboard.getDashboardData>["budgets"];
 }
 
 export default function BudgetsOverview({ data }: BudgetsOverviewProps) {
+  const router = useRouter();
+
   return (
     <div className="border-2 border-black rounded-sm p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all flex flex-col space-y-4">
       <div className="flex items-center justify-between">
         <p className="font-black text-xl">Budget Progress</p>
 
-        <Link to="/budgets">
-          <Button variant={"link"}>View all</Button>
-        </Link>
+        {data && data?.length > 0 && (
+          <Link to="/budgets">
+            <Button variant={"link"}>View all</Button>
+          </Link>
+        )}
       </div>
 
       <div className="flex flex-col space-y-4">
-        {data?.map((item) => (
-          <BudgetOverviewCard
-            key={item._id}
-            category={item.category}
-            limit={item.limit}
-            progress={item.progress}
-            spent={item.spent}
+        {data?.length === 0 ? (
+          <EmptyState
+            btnLabel="Add budget"
+            description="No recent budgets available"
+            title="No Budget"
+            onBtnClick={() => router.navigate({ to: "/transactions" })}
           />
-        ))}
+        ) : (
+          data?.map((item) => (
+            <BudgetOverviewCard
+              key={item._id}
+              category={item.category}
+              limit={item.limit}
+              progress={item.progress}
+              spent={item.spent}
+            />
+          ))
+        )}
       </div>
     </div>
   );

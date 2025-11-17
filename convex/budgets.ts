@@ -1,10 +1,10 @@
 import { ConvexError, v } from "convex/values";
-import { internalMutation, mutation, query } from "./_generated/server";
+import { internalMutation } from "./_generated/server";
 import { TransactionCategories } from "../src/constants/categories";
-import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
+import { authenticatedMutation, authenticatedQuery } from "./lib/authHelpers";
 
-export const createBudget = mutation({
+export const createBudget = authenticatedMutation({
   args: {
     limit: v.number(),
     category: v.union(
@@ -15,14 +15,10 @@ export const createBudget = mutation({
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const { userId } = ctx;
 
     const now = Date.now();
     const { periodStart, periodEnd } = args;
-
-    if (userId === null) {
-      throw new ConvexError("User not aunthenticated");
-    }
 
     if (periodEnd <= periodStart)
       throw new ConvexError("End date must be after start date");
@@ -84,7 +80,7 @@ export const createBudget = mutation({
   },
 });
 
-export const updateBudget = mutation({
+export const updateBudget = authenticatedMutation({
   args: {
     _id: v.id("budgets"),
     limit: v.number(),
@@ -96,14 +92,10 @@ export const updateBudget = mutation({
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const { userId } = ctx;
 
     const now = Date.now();
     const { periodStart, periodEnd } = args;
-
-    if (userId === null) {
-      throw new ConvexError("User not aunthenticated");
-    }
 
     if (periodEnd <= periodStart)
       throw new ConvexError("End date must be after start date");
@@ -183,13 +175,12 @@ export const updateBudget = mutation({
   },
 });
 
-export const deleteBudget = mutation({
+export const deleteBudget = authenticatedMutation({
   args: {
     budgetId: v.id("budgets"),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Unauthorized");
+    const { userId } = ctx;
 
     const budget = await ctx.db.get(args.budgetId);
     if (!budget || budget.userId !== userId)
@@ -232,14 +223,10 @@ export const deactivateBudget = internalMutation({
   },
 });
 
-export const getActiveBudgets = query({
+export const getActiveBudgets = authenticatedQuery({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-
-    if (userId === null) {
-      throw new ConvexError("User not authenticated");
-    }
+    const { userId } = ctx;
 
     const budgets = await ctx.db
       .query("budgets")

@@ -1,10 +1,9 @@
 import { ConvexError, v } from "convex/values";
-import { mutation, query } from "./_generated/server";
 import { TransactionCategories } from "../src/constants/categories";
-import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
+import { authenticatedMutation, authenticatedQuery } from "./lib/authHelpers";
 
-export const createSplit = mutation({
+export const createSplit = authenticatedMutation({
   args: {
     description: v.string(),
     totalAmount: v.number(),
@@ -24,8 +23,7 @@ export const createSplit = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Unauthorized");
+    const { userId } = ctx;
 
     const now = Date.now();
 
@@ -37,6 +35,10 @@ export const createSplit = mutation({
       date: args.date,
       status: args.participants.length > 1 ? "active" : "pending",
       notes: args.notes,
+    });
+
+    await ctx.scheduler.runAfter(0, internal.achievements.onSplitBillCreated, {
+      userId,
     });
 
     await ctx.scheduler.runAfter(0, internal.achievements.onSplitBillCreated, {
@@ -82,16 +84,23 @@ export const createSplit = mutation({
           sharePercentage: participant.sharePercentage,
           message: `Join "${args.description}" split?`,
         });
+
+        await ctx.scheduler.runAfter(
+          0,
+          internal.achievements.onSplitBillInvite,
+          {
+            userId,
+          }
+        );
       }
     }
   },
 });
 
-export const getUserSplits = query({
+export const getUserSplits = authenticatedQuery({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Unauthorized");
+    const { userId } = ctx;
 
     const pendingInvites = await ctx.db
       .query("invites")
@@ -276,13 +285,29 @@ export const getUserSplits = query({
   },
 });
 
-export const searchAvailableParticipants = query({
+export const getUserPendingInvites = authenticatedQuery({
+  args: {},
+  handler: async (ctx) => {
+    const { userId } = ctx;
+
+    const pendingInvites = await ctx.db
+      .query("invites")
+      .withIndex("by_recipient_pending", (q) =>
+        q.eq("recipientId", userId).eq("status", "pending")
+      )
+      .order("desc")
+      .collect();
+
+    return pendingInvites?.length || 0;
+  },
+});
+
+export const searchAvailableParticipants = authenticatedQuery({
   args: {
     name: v.string(),
   },
   handler: async (ctx, { name }) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Unauthorized");
+    const { userId } = ctx;
 
     // Search for users by name
     const users = await ctx.db
@@ -302,14 +327,13 @@ export const searchAvailableParticipants = query({
   },
 });
 
-export const settleParticipantShare = mutation({
+export const settleParticipantShare = authenticatedMutation({
   args: {
     splitId: v.id("splitBills"),
     amount: v.number(),
   },
   handler: async (ctx, { splitId, amount }) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Unauthorized");
+    const { userId } = ctx;
 
     // Fetch split
     const split = await ctx.db.get(splitId);
@@ -356,6 +380,10 @@ export const settleParticipantShare = mutation({
       notes: `Partial payment toward ${fullShare} share (${amount} of remaining ${remainingBefore})`,
     });
 
+    await ctx.scheduler.runAfter(0, internal.achievements.onSplitBillSettled, {
+      userId,
+    });
+
     // Update participation
     const newSettledAmount = currentSettled + amount;
     const isFullySettled = newSettledAmount >= fullShare;
@@ -390,14 +418,13 @@ export const settleParticipantShare = mutation({
   },
 });
 
-export const respondToSplitInvite = mutation({
+export const respondToSplitInvite = authenticatedMutation({
   args: {
     inviteId: v.id("invites"),
     action: v.union(v.literal("accept"), v.literal("reject")),
   },
   handler: async (ctx, { inviteId, action }) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Unauthorized");
+    const { userId } = ctx;
 
     // Fetch invite
     const invite = await ctx.db.get(inviteId);
@@ -465,9 +492,13 @@ export const respondToSplitInvite = mutation({
     const newStatus = currentParticipants.length > 1 ? "active" : "pending";
     await ctx.db.patch(invite.splitBIllsId, { status: newStatus });
 
-    // Optional: Recalculate shares if even split desired (or keep custom from invites)
-
-    // Optional: Notify creator
+    await ctx.scheduler.runAfter(
+      0,
+      internal.achievements.onAcceptSplitBillInvite,
+      {
+        userId,
+      }
+    );
 
     return { success: true, action: "accepted", splitId: invite.splitBIllsId };
   },

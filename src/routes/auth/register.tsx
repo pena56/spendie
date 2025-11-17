@@ -6,10 +6,8 @@ import * as z from "zod";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   Field,
@@ -21,6 +19,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { showErrorMessage } from "@/lib/utils";
 import { useState } from "react";
+import { Navbar } from "@/components/navbar";
+import { PiggyBank } from "lucide-react";
 
 export const Route = createFileRoute("/auth/register")({
   component: RouteComponent,
@@ -28,7 +28,7 @@ export const Route = createFileRoute("/auth/register")({
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  email: z.email().min(1, "A valid email address is required."),
+  email: z.email().min(1, "Email address is required."),
   password: z.string().min(1, "Password is required."),
   flow: z.string(),
 });
@@ -66,112 +66,162 @@ function RouteComponent() {
   });
 
   return (
-    <div className="min-h-screen">
-      <Card className="w-full sm:max-w-md font-poppins mx-auto">
-        <CardHeader>
-          <CardTitle>Register</CardTitle>
-          <CardDescription>Register your new account.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form
-            id="bug-report-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              form.handleSubmit();
-            }}
-          >
-            <FieldGroup>
-              <form.Field
-                name="name"
-                children={(field) => {
-                  const isInvalid =
-                    field.state.meta.isTouched && !field.state.meta.isValid;
-                  return (
-                    <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>Name:</FieldLabel>
-                      <Input
-                        id={field.name}
-                        name={field.name}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        aria-invalid={isInvalid}
-                        autoComplete="off"
-                      />
-                      {isInvalid && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </Field>
-                  );
-                }}
-              />
+    <div className="min-h-screen bg-yellow-300">
+      <Navbar />
 
-              <form.Field
-                name="email"
-                children={(field) => {
-                  const isInvalid =
-                    field.state.meta.isTouched && !field.state.meta.isValid;
-                  return (
-                    <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>
-                        Email address:
-                      </FieldLabel>
-                      <Input
-                        id={field.name}
-                        name={field.name}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        aria-invalid={isInvalid}
-                        autoComplete="off"
-                      />
-                      {isInvalid && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </Field>
-                  );
-                }}
-              />
+      <div className="mx-auto flex max-w-md items-center justify-center py-14 px-4">
+        <Card
+          className="w-full animate-fade-in rounded-sm border-2 border-foreground bg-background p-8 px-4 md:p-10"
+          style={{ boxShadow: "6px 6px 0px rgba(0,0,0,0.2)" }}
+        >
+          <CardHeader>
+            <div className=" text-center">
+              <div className="mb-4 flex items-center justify-center gap-3">
+                <div className="w-10 h-10 rounded-sm bg-yellow-300 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5 flex items-center justify-center">
+                  <PiggyBank className="w-7 h-7 text-black" />
+                </div>
+                <h1 className="text-4xl font-black text-foreground tracking-tighter">
+                  SPENDIE
+                </h1>
+              </div>
+              <h2
+                className="text-3xl font-black text-foreground"
+                style={{ textShadow: "1px 1px 0px rgba(0, 0, 0, 1)" }}
+              >
+                WELCOME, CHAMP!
+              </h2>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <form
+              id="register-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                form.handleSubmit();
+              }}
+            >
+              <FieldGroup>
+                <form.Field
+                  name="name"
+                  children={(field) => {
+                    const isInvalid =
+                      field.state.meta.isTouched && !field.state.meta.isValid;
+                    return (
+                      <Field
+                        data-invalid={isInvalid}
+                        className="flex flex-col gap-0"
+                      >
+                        <FieldLabel
+                          htmlFor={field.name}
+                          className="uppercase font-black text-lg"
+                        >
+                          Name:
+                        </FieldLabel>
+                        <Input
+                          id={field.name}
+                          name={field.name}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          aria-invalid={isInvalid}
+                          autoComplete="off"
+                          placeholder="Enter your name"
+                          className="text-lg font-black h-10"
+                        />
+                        {isInvalid && (
+                          <FieldError errors={field.state.meta.errors} />
+                        )}
+                      </Field>
+                    );
+                  }}
+                />
 
-              <form.Field
-                name="password"
-                children={(field) => {
-                  const isInvalid =
-                    field.state.meta.isTouched && !field.state.meta.isValid;
-                  return (
-                    <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>Password:</FieldLabel>
-                      <Input
-                        id={field.name}
-                        name={field.name}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        aria-invalid={isInvalid}
-                        autoComplete="off"
-                        type="password"
-                      />
-                      {isInvalid && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </Field>
-                  );
-                }}
-              />
-            </FieldGroup>
-          </form>
-        </CardContent>
-        <CardFooter>
-          <Button
-            isLoading={isSubmitting}
-            type="submit"
-            form="bug-report-form"
-            className="w-full"
-          >
-            Submit
-          </Button>
-        </CardFooter>
-      </Card>
+                <form.Field
+                  name="email"
+                  children={(field) => {
+                    const isInvalid =
+                      field.state.meta.isTouched && !field.state.meta.isValid;
+                    return (
+                      <Field
+                        data-invalid={isInvalid}
+                        className="flex flex-col gap-0"
+                      >
+                        <FieldLabel
+                          htmlFor={field.name}
+                          className="uppercase font-black text-lg"
+                        >
+                          Email address:
+                        </FieldLabel>
+                        <Input
+                          id={field.name}
+                          name={field.name}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          aria-invalid={isInvalid}
+                          autoComplete="off"
+                          placeholder="Enter your email address"
+                          className="text-lg font-black h-10"
+                        />
+                        {isInvalid && (
+                          <FieldError errors={field.state.meta.errors} />
+                        )}
+                      </Field>
+                    );
+                  }}
+                />
+
+                <form.Field
+                  name="password"
+                  children={(field) => {
+                    const isInvalid =
+                      field.state.meta.isTouched && !field.state.meta.isValid;
+                    return (
+                      <Field
+                        data-invalid={isInvalid}
+                        className="flex flex-col gap-0"
+                      >
+                        <FieldLabel
+                          htmlFor={field.name}
+                          className="uppercase font-black text-lg"
+                        >
+                          Password:
+                        </FieldLabel>
+                        <Input
+                          id={field.name}
+                          name={field.name}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          aria-invalid={isInvalid}
+                          autoComplete="off"
+                          type="password"
+                          placeholder="Enter your password"
+                          className="text-lg font-black h-10"
+                        />
+                        {isInvalid && (
+                          <FieldError errors={field.state.meta.errors} />
+                        )}
+                      </Field>
+                    );
+                  }}
+                />
+              </FieldGroup>
+            </form>
+          </CardContent>
+          <CardFooter className="mt-5">
+            <Button
+              isLoading={isSubmitting}
+              type="submit"
+              form="register-form"
+              className="h-14 w-full font-black text-lg border-2 border-foreground/20 hover:scale-105 transition-all "
+              style={{ boxShadow: "2px 2px 0px rgba(0,0,0,0.1)" }}
+            >
+              Submit
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
     </div>
   );
 }

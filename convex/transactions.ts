@@ -1,13 +1,19 @@
 import * as z from "zod";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { generateObject } from "ai";
+import { generateObject, generateText } from "ai";
 import { ConvexError, v } from "convex/values";
-import { action, mutation, query } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
-import { TransactionCategories } from "../src/constants/categories";
+import {
+  TransactionCategories,
+  TransactionCategory,
+} from "../src/constants/categories";
 import { api, internal } from "./_generated/api";
+import {
+  authenticatedAction,
+  authenticatedMutation,
+  authenticatedQuery,
+} from "./lib/authHelpers";
 
-export const addTransaction = mutation({
+export const addTransaction = authenticatedMutation({
   args: {
     amount: v.number(),
     description: v.string(),
@@ -24,11 +30,7 @@ export const addTransaction = mutation({
     receiptUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-
-    if (userId === null) {
-      throw new ConvexError("User not aunthenticated");
-    }
+    const { userId } = ctx;
 
     const transactionId = await ctx.db.insert("transactions", {
       ...args,
@@ -52,14 +54,10 @@ export const addTransaction = mutation({
   },
 });
 
-export const getTransactions = query({
+export const getTransactions = authenticatedQuery({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-
-    if (userId === null) {
-      throw new ConvexError("User not authenticated");
-    }
+    const { userId } = ctx;
 
     // Fetch all transactions, ordered by date desc (recent first)
     const transactions = await ctx.db
@@ -156,15 +154,11 @@ export const getTransactions = query({
   },
 });
 
-export const deleteTransaction = mutation({
+export const deleteTransaction = authenticatedMutation({
   args: { id: v.id("transactions") },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const { userId } = ctx;
     const { id } = args;
-
-    if (userId === null) {
-      throw new ConvexError("User not aunthenticated");
-    }
 
     const existing = await ctx.db.get(id);
 
@@ -177,7 +171,7 @@ export const deleteTransaction = mutation({
   },
 });
 
-export const updateTransaction = mutation({
+export const updateTransaction = authenticatedMutation({
   args: {
     _id: v.id("transactions"),
     amount: v.number(),
@@ -190,11 +184,7 @@ export const updateTransaction = mutation({
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-
-    if (userId === null) {
-      throw new ConvexError("User not aunthenticated");
-    }
+    const { userId } = ctx;
 
     const { _id, ...updates } = args;
 
@@ -210,122 +200,258 @@ export const updateTransaction = mutation({
   },
 });
 
+// ============================================
+// TRANSACTION SCHEMA
+// ============================================
+
 const transactionSchema = z.object({
-  description: z.string().min(1).max(200),
+  description: z.string().describe("Brief description of the transaction"),
   amount: z
     .number()
-    .min(-999999)
-    .max(999999)
-    .refine((val) => val !== 0, "Amount cannot be zero"),
-  type: z.enum(["income", "expense"]),
-  category: z.enum(TransactionCategories.map((item) => item.name)),
-  date: z.number().optional(),
-  notes: z.string().optional(),
+    .positive()
+    .describe("Transaction amount (always positive)"),
+  type: z.enum(["income", "expense"]).describe("Type of transaction"),
+  category: z
+    .string()
+    .describe(
+      `Category from: ${TransactionCategories.map((c) => c.name).join(", ")}`
+    ),
+  date: z
+    .string()
+    .optional()
+    .describe("Date in YYYY-MM-DD format, or omit for today"),
+  notes: z.string().optional().describe("Additional notes or context"),
 });
 
-export const addTransactionFromVoice = action({
+// ============================================
+// ACTION: Add Transaction from Voice
+// ============================================
+
+export const addTransactionFromVoice = authenticatedAction({
   args: {
     transcript: v.string(),
   },
   handler: async (ctx, { transcript }) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("User not authenticated");
+    const { userId } = ctx;
 
     const google = createGoogleGenerativeAI({
       apiKey: process.env.GEMINI_API_KEY!,
     });
 
+    const todayDate = new Date().toISOString().split("T")[0];
+    const categoryList = TransactionCategories.map((c) => c.name).join(", ");
+
     const prompt = `
-      Analyze this voice transcript and extract a single financial transaction.
+      You are a financial transaction parser. Extract transaction details from this voice transcript.
+
       Transcript: "${transcript}"
-      
-      Rules:
-      - Amount: Positive for both income (e.g., "earned 100") or expense (e.g., "spent 4.50").
-      - Type: Infer from amount/context ("income" or "expense").
-      - Category: Choose from: ${TransactionCategories.map((c) => c.name).join(
-        ", "
-      )}.
-      - Date: Use today's date (timestamp) unless specified; otherwise, now.
-      - Description: Concise summary.
-      - Notes: Any extra details.
-      
-      Respond ONLY with the structured JSON object, no extra text.
+
+      IMPORTANT RULES:
+      1. Amount: ALWAYS return a positive number (e.g., 50.00, 4.50, 100)
+      2. Type: Must be either "income" or "expense"
+        - "expense" for: spent, bought, paid, purchased, cost
+        - "income" for: earned, received, got paid, salary
+      3. Category: MUST be one of these: ${categoryList}
+        - Match the most appropriate category
+        - Default to "General" if unclear
+      4. Date: Use today's date (${todayDate}) if not specified
+        - Format: YYYY-MM-DD
+      5. Description: Brief summary (e.g., "Coffee at Starbucks", "Grocery shopping")
+      6. Notes: Any extra context (optional)
+
+      Examples:
+      - "I spent 4.50 on coffee" → amount: 4.50, type: "expense", category: "Dining"
+      - "bought groceries for 50 dollars" → amount: 50, type: "expense", category: "Groceries"
+      - "earned 100 from freelance" → amount: 100, type: "income", category: "Income"
+
+      Return ONLY a valid JSON object matching the schema. No explanation, no markdown.
     `;
 
     try {
       const { object } = await generateObject({
-        model: google("gemini-2.5-flash-preview-09-2025"),
+        model: google("gemini-2.5-flash-lite-preview-09-2025"),
         schema: transactionSchema,
         prompt,
-        maxRetries: 2,
+        temperature: 0.3, // Lower temperature for more consistent parsing
       });
 
-      // Validate/enhance parsed object
-      const txnData = transactionSchema.parse({
-        ...object,
-      });
+      // Validate category is valid
+      const validCategories = TransactionCategories.map((c) => c.name);
+      if (!validCategories.includes(object.category as TransactionCategory)) {
+        console.warn(
+          `Invalid category "${object.category}", defaulting to "General"`
+        );
+        object.category = "General";
+      }
 
+      // Parse and validate the full object
+      const txnData = transactionSchema.parse(object);
+
+      // Convert date string to timestamp
+      const dateTimestamp = txnData.date
+        ? new Date(txnData.date).getTime()
+        : Date.now();
+
+      // Create the transaction
       await ctx.runMutation(api.transactions.addTransaction, {
-        ...txnData,
-        date: object.date ?? Date.now(),
+        description: txnData.description,
+        amount: txnData.amount,
+        type: txnData.type,
+        category: txnData.category as TransactionCategory,
+        date: dateTimestamp,
+        notes: txnData.notes || `Added via voice: "${transcript}"`,
         source: "voice",
       });
 
-      // Optional: Award XP, check achievements
-      // await api.achievements.awardXp(ctx, { userId, amount: 10 }); // Example
+      // Award XP after transaction is created
+      const { transactions: totalTransactions } = await ctx.runQuery(
+        api.transactions.getTransactions
+      );
 
-      return { success: true, transaction: txnData };
-    } catch (error) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.achievements.onTransactionAdded,
+        {
+          userId,
+          isFirstTransaction: totalTransactions.length === 1,
+          hasReceipt: false,
+          isVoice: true,
+        }
+      );
+
+      return {
+        success: true,
+        transaction: {
+          ...txnData,
+          date: dateTimestamp,
+        },
+      };
+    } catch (error: any) {
+      // Handle specific error types
       if (error instanceof z.ZodError) {
-        throw new ConvexError(`Parsing error:${error}`);
+        const issues = error.issues
+          .map((i) => `${i.path.join(".")}: ${i.message}`)
+          .join(", ");
+        throw new ConvexError(`Parsing error: ${issues}`);
       }
-      throw new ConvexError(`Gemini API error: ${error}`);
+
+      if (error?.message?.includes("No object generated")) {
+        // Fallback: Try with generateText instead
+        return await fallbackTextParsing(ctx, transcript, userId);
+      }
+
+      throw new ConvexError(`AI error: ${error?.message || "Unknown error"}`);
     }
   },
 });
 
-export const generateUploadUrl = mutation({
-  handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (userId === null) {
-      throw new ConvexError("You must be logged in to upload a file.");
-    }
+// ============================================
+// FALLBACK: Text-based Parsing
+// ============================================
 
+async function fallbackTextParsing(ctx: any, transcript: string, userId: any) {
+  const google = createGoogleGenerativeAI({
+    apiKey: process.env.GEMINI_API_KEY!,
+  });
+
+  try {
+    const { text } = await generateText({
+      model: google("gemini-2.5-flash-lite-preview-09-2025"),
+      prompt: `
+        Extract transaction from: "${transcript}"
+
+        Return ONLY valid JSON (no markdown):
+        {
+          "description": "string",
+          "amount": number (positive),
+          "type": "income" or "expense",
+          "category": "one of: ${TransactionCategories.map((c) => c.name).join(
+            ", "
+          )}",
+          "date": "YYYY-MM-DD or omit",
+          "notes": "optional string"
+        }
+        `,
+      temperature: 0.3,
+    });
+
+    // Clean and parse JSON
+    const cleaned = text
+      .replace(/```json\n?/g, "")
+      .replace(/```\n?/g, "")
+      .trim();
+
+    const parsed = JSON.parse(cleaned);
+    const validated = transactionSchema.parse(parsed);
+
+    const dateTimestamp = validated.date
+      ? new Date(validated.date).getTime()
+      : Date.now();
+
+    await ctx.runMutation(api.transactions.addTransaction, {
+      description: validated.description,
+      amount: validated.amount,
+      type: validated.type,
+      category: validated.category,
+      date: dateTimestamp,
+      notes: validated.notes || `Added via voice: "${transcript}"`,
+      source: "voice",
+    });
+
+    return {
+      success: true,
+      transaction: {
+        ...validated,
+        date: dateTimestamp,
+      },
+    };
+  } catch (fallbackError: any) {
+    throw new ConvexError(
+      `Unable to parse transaction: ${fallbackError?.message}`
+    );
+  }
+}
+
+export const generateUploadUrl = authenticatedMutation({
+  handler: async (ctx) => {
     return await ctx.storage.generateUploadUrl();
   },
 });
 
 const transactionsSchema = z.array(transactionSchema);
 
-export const addTransactionFromImage = action({
+export const addTransactionFromImage = authenticatedAction({
   args: {
     storageId: v.id("_storage"),
   },
   handler: async (ctx, { storageId }) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("User not authenticated");
+    const { userId } = ctx;
 
     const google = createGoogleGenerativeAI({
       apiKey: process.env.GEMINI_API_KEY!,
     });
 
+    const todayDate = new Date().toISOString().split("T")[0];
+    const categoryList = TransactionCategories.map((c) => c.name).join(", ");
+
     const prompt = `
-      Analyze this receipt or invoice image and extract ALL line items as separate financial transactions.
+      You are a financial transaction parser. Extract transaction details from this receipt or invoice image and extract ALL line items as separate financial transactions.
       Always return an array of transactions, even if only one.
       
-      Rules:
-      - Amount: Extract per item; positive for income (e.g., invoice to you), positive for expense (e.g., purchases).
-      - Type: Infer from context ("income" for payments received, "expense" for costs).
-      - Category: Choose from: ${TransactionCategories.map((c) => c.name).join(
-        ", "
-      )}.
-      - If you cannot determine a date, use today's date: ${
-        new Date().toISOString().split("T")[0]
-      }.
-      - Description: Concise per item (e.g., "Coffee at Starbucks").
-      - Notes: Item details, quantity, or vendor notes.
+      IMPORTANT RULES:
+      1. Amount: ALWAYS return a positive number (e.g., 50.00, 4.50, 100)
+      2. Type: Must be either "income" or "expense"
+        - "expense" for: spent, bought, paid, purchased, cost
+        - "income" for: earned, received, got paid, salary
+      3. Category: MUST be one of these: ${categoryList}
+        - Match the most appropriate category
+        - Default to "General" if unclear
+      4. Date: Use today's date (${todayDate}) if not specified
+        - Format: YYYY-MM-DD
+      5. Description: Brief summary (e.g., "Coffee at Starbucks", "Grocery shopping")
+      6. Notes: Any extra context (optional)
       
-      Respond ONLY with the structured JSON array of objects, no extra text.
+      Return ONLY a valid array of JSON objects, no extra text.
     `;
 
     const imageUrl = await ctx.storage.getUrl(storageId);
@@ -358,16 +484,33 @@ export const addTransactionFromImage = action({
 
       await Promise.all(
         txnDatas.map(async (txnData) => {
-          const date = txnData.date ?? Date.now();
+          const dateTimestamp = txnData.date
+            ? new Date(txnData.date).getTime()
+            : Date.now();
+          const category = txnData.category as TransactionCategory;
 
           // Insert via existing mutation
           const txnId = await ctx.runMutation(api.transactions.addTransaction, {
             ...txnData,
-            date,
+            category,
+            date: dateTimestamp,
             source: "scan",
             receiptUrl: imageUrl,
             receiptStorageId: storageId,
           });
+
+          // Award XP after transaction is created
+
+          await ctx.scheduler.runAfter(
+            0,
+            internal.achievements.onTransactionAdded,
+            {
+              userId,
+              isFirstTransaction: false,
+              hasReceipt: true,
+              isVoice: false,
+            }
+          );
 
           return { id: txnId, ...txnData };
         })
@@ -383,13 +526,13 @@ export const addTransactionFromImage = action({
   },
 });
 
-export const getPreviousTransactions = query({
+export const getPreviousTransactions = authenticatedQuery({
   args: {
     userId: v.id("users"),
     date: v.number(),
   },
   handler: async (ctx, { date, userId }) => {
-    const authUserId = await getAuthUserId(ctx);
+    const { userId: authUserId } = ctx;
     if (authUserId !== userId) {
       throw new ConvexError("Unauthorized");
     }

@@ -1,28 +1,20 @@
-import { getAuthUserId } from "@convex-dev/auth/server";
-import { action, internalQuery, query } from "./_generated/server";
-import { ConvexError, v } from "convex/values";
-import { api, internal } from "./_generated/api";
+import { internalQuery } from "./_generated/server";
+import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import { FunctionReturnType } from "convex/server";
+import { authenticatedAction } from "./lib/authHelpers";
 
 type getDashboardResult = {
   transactions: FunctionReturnType<
     typeof internal.dashboard.getDashboardTransactions
   >;
   budgets: FunctionReturnType<typeof internal.dashboard.getDashboardBudgets>;
-  insights: FunctionReturnType<typeof api.workflows.insights.getActiveInsights>;
-  insightStatus: FunctionReturnType<
-    typeof api.workflows.insights.getCurrentInsightStatus
-  >;
 };
 
-export const getDashboardData = action({
+export const getDashboardData = authenticatedAction({
   args: {},
   handler: async (ctx): Promise<getDashboardResult> => {
-    const userId = await getAuthUserId(ctx);
-
-    if (userId === null) {
-      throw new ConvexError("User not authenticated");
-    }
+    const { userId } = ctx;
 
     const transactions = await ctx.runQuery(
       internal.dashboard.getDashboardTransactions,
@@ -33,15 +25,7 @@ export const getDashboardData = action({
       userId,
     });
 
-    const insights = await ctx.runQuery(
-      api.workflows.insights.getActiveInsights
-    );
-
-    const insightStatus = await ctx.runQuery(
-      api.workflows.insights.getCurrentInsightStatus
-    );
-
-    return { transactions, budgets, insights, insightStatus };
+    return { transactions, budgets };
   },
 });
 

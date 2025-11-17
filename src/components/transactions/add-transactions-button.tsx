@@ -99,7 +99,7 @@ export function AddTransactionsButton() {
             onClick={() => setShowSpeechInputForm(true)}
             className="flex items-center gap-3 w-full px-3 py-2 cursor-pointer hover:bg-blue-50 rounded justify-end"
           >
-            <span className="font-medium text-sm">Speech Input</span>
+            <span className="font-medium text-sm">Voice Input</span>
             <div className="flex items-center justify-center w-10 h-10 rounded-full bg-purple-300 border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,0.5)]">
               <Mic className="text-black" width={22} height={22} />
             </div>

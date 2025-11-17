@@ -1,7 +1,9 @@
 import { AddBudgetsButton } from "@/components/budgets/add-budgets-button";
 import { BudgetCard } from "@/components/budgets/budget-card";
 import TotalBudgetCard from "@/components/budgets/total-budget-card";
+import { EmptyState } from "@/components/empty-state";
 import Layout from "@/components/layout";
+import { LoadingScreen } from "@/components/loading-screen";
 import { convexQuery } from "@convex-dev/react-query";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
@@ -12,23 +14,38 @@ export const Route = createFileRoute("/_private/budgets")({
 });
 
 function RouteComponent() {
-  const { data } = useQuery(convexQuery(api.budgets.getActiveBudgets, {}));
+  const { data, isLoading } = useQuery(
+    convexQuery(api.budgets.getActiveBudgets, {})
+  );
 
   return (
     <Layout title="Budgets">
-      <TotalBudgetCard
-        totalBudget={data?.totals.totalBudget}
-        remaining={data?.totals.totalRemaining}
-        totalSpent={data?.totals.totalSpent}
-      />
+      {isLoading ? (
+        <LoadingScreen title="Loading your budgets..." />
+      ) : (
+        <>
+          <TotalBudgetCard
+            totalBudget={data?.totals.totalBudget}
+            remaining={data?.totals.totalRemaining}
+            totalSpent={data?.totals.totalSpent}
+          />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {data?.budgets.map((budget) => (
-          <BudgetCard key={budget._id} data={budget} />
-        ))}
-      </div>
+          {data?.budgets?.length === 0 ? (
+            <EmptyState
+              title="No budgets"
+              description="You've not created any budget yet."
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {data?.budgets.map((budget) => (
+                <BudgetCard key={budget._id} data={budget} />
+              ))}
+            </div>
+          )}
 
-      <AddBudgetsButton />
+          <AddBudgetsButton />
+        </>
+      )}
     </Layout>
   );
 }

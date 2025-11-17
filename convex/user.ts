@@ -10,6 +10,11 @@ import { ConvexError, v } from "convex/values";
 import { internal } from "./_generated/api";
 import { Scrypt } from "lucia";
 import { LEVEL_THRESHOLDS } from "./achievements";
+import {
+  authenticatedAction,
+  authenticatedMutation,
+  authenticatedQuery,
+} from "./lib/authHelpers";
 
 function getXPForNextLevel(currentLevel: number): number {
   if (currentLevel >= LEVEL_THRESHOLDS.length) {
@@ -18,12 +23,9 @@ function getXPForNextLevel(currentLevel: number): number {
   return LEVEL_THRESHOLDS[currentLevel];
 }
 
-export const getCurrentUser = query({
+export const getCurrentUser = authenticatedQuery({
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (userId === null) {
-      return null;
-    }
+    const { userId } = ctx;
 
     const user = await ctx.db.get(userId);
     if (!user) {
@@ -108,7 +110,7 @@ export const getCurrentUser = query({
   },
 });
 
-export const updateUserInfo = mutation({
+export const updateUserInfo = authenticatedMutation({
   args: {
     locale: v.optional(v.string()),
     currency: v.optional(v.string()),
@@ -119,11 +121,7 @@ export const updateUserInfo = mutation({
     isProfilePublic: v.optional(v.boolean()),
   },
   handler: async (ctx, arg) => {
-    const userId = await getAuthUserId(ctx);
-
-    if (userId === null) {
-      throw new ConvexError("Unauthenticated");
-    }
+    const { userId } = ctx;
 
     const user = await ctx.db.patch(userId, arg);
 
@@ -131,18 +129,14 @@ export const updateUserInfo = mutation({
   },
 });
 
-export const changePassword = action({
+export const changePassword = authenticatedAction({
   args: {
     oldPassword: v.string(),
     newPassword: v.string(),
   },
   handler: async (ctx, args) => {
     // Get the current authenticated user
-    const userId = await getAuthUserId(ctx);
-
-    if (!userId) {
-      throw new ConvexError("Not authenticated");
-    }
+    const { userId } = ctx;
 
     // Get the user's password account
     const passwordAccount = await ctx.runQuery(
@@ -212,17 +206,13 @@ export const updatePassword = internalMutation({
   },
 });
 
-export const deleteAccount = action({
+export const deleteAccount = authenticatedAction({
   args: {
     password: v.string(),
   },
   handler: async (ctx, args) => {
     // Get the current authenticated user
-    const userId = await getAuthUserId(ctx);
-
-    if (!userId) {
-      throw new Error("Not authenticated");
-    }
+    const { userId } = ctx;
 
     // Get the user's password account and verify password
     const passwordAccount = await ctx.runQuery(
@@ -389,11 +379,10 @@ export const deleteAccountData = internalMutation({
 });
 
 // Track daily login and streak
-export const updateLastActivity = mutation({
+export const updateLastActivity = authenticatedMutation({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    const { userId } = ctx;
 
     const user = await ctx.db.get(userId);
     if (!user) return;

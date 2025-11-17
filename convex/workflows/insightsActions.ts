@@ -112,24 +112,94 @@ export const scrapeFinancialTrends = internalAction({
       apiKey: process.env.FIRECRAWL_API_KEY!,
     });
 
-    const sources = [
-      "https://www.nerdwallet.com/blog/finance/financial-trends/",
-      "https://www.bankrate.com/personal-finance/",
-    ];
-
+    const sources = ["https://www.bankrate.com/personal-finance/"];
     const scrapedData: string[] = [];
 
     try {
-      // Scrape the first source
-      const result = await firecrawl.scrape(sources[0], {
+      // Step 1: Scrape the main page to get article links
+      console.log("Scraping main page for article links...");
+      const mainPage = await firecrawl.scrape(sources[0], {
         formats: ["markdown"],
       });
 
-      if (result.markdown) {
-        scrapedData.push(result.markdown);
+      if (!mainPage.markdown) {
+        throw new Error("Failed to scrape main page");
       }
+
+      // Step 2: Extract article URLs from markdown links
+      // Regex to match markdown links: [text](url)
+      const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g;
+      const matches = [...mainPage.markdown.matchAll(linkRegex)];
+
+      // Filter for article URLs (typically contain /articles/ or /finance/ in path)
+      const articleUrls = matches
+        .map((match) => match[2])
+        .filter((url) => {
+          // Filter for actual article URLs from bankrate.com
+          return (
+            url.includes("bankrate.com") &&
+            !url.includes("#") && // Skip anchor links
+            !url.includes("?") && // Skip links with query params
+            (url.includes("/finance/") ||
+              url.includes("/banking/") ||
+              url.includes("/investing/") ||
+              url.includes("/credit-cards/") ||
+              url.includes("/mortgages/"))
+          );
+        })
+        // Remove duplicates
+        .filter((url, index, self) => self.indexOf(url) === index)
+        // Take first 5
+        .slice(0, 5);
+
+      console.log(`Found ${articleUrls.length} article URLs:`, articleUrls);
+
+      // Step 3: Scrape each article
+      if (articleUrls.length === 0) {
+        throw new Error("No article URLs found");
+      }
+
+      for (let i = 0; i < articleUrls.length; i++) {
+        try {
+          console.log(
+            `Scraping article ${i + 1}/${articleUrls.length}: ${articleUrls[i]}`
+          );
+
+          const articleResult = await firecrawl.scrape(articleUrls[i], {
+            formats: ["markdown"],
+          });
+
+          if (articleResult.markdown) {
+            // Add article with header for context
+            scrapedData.push(
+              `\n=== Article ${i + 1}: ${articleUrls[i]} ===\n${
+                articleResult.markdown
+              }`
+            );
+          }
+
+          // Add a small delay to avoid rate limiting
+          if (i < articleUrls.length - 1) {
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+          }
+        } catch (articleError) {
+          console.error(
+            `Error scraping article ${articleUrls[i]}:`,
+            articleError
+          );
+          // Continue with other articles even if one fails
+        }
+      }
+
+      if (scrapedData.length === 0) {
+        throw new Error("Failed to scrape any articles");
+      }
+
+      console.log(`Successfully scraped ${scrapedData.length} articles`);
+      return scrapedData.join("\n\n");
     } catch (error) {
       console.error("Error scraping trends:", error);
+
       // Use fallback data if scraping fails
       scrapedData.push(`
         Top Financial Trends 2024:
@@ -141,10 +211,12 @@ export const scrapeFinancialTrends = internalAction({
         - Gas prices fluctuating between $3-4 per gallon
         - Streaming services averaging $50/month per household
         - Healthcare costs rising 6% annually
+        
+        Note: This is fallback data. Live article scraping temporarily unavailable.
       `);
-    }
 
-    return scrapedData.join("\n\n");
+      return scrapedData.join("\n\n");
+    }
   },
 });
 
@@ -159,36 +231,36 @@ export const generateInsightsWithAI = internalAction({
   },
   handler: async (ctx, args): Promise<Insight[]> => {
     const prompt = `
-You are a personal finance advisor. Analyze this user's spending and provide exactly 3 actionable insights.
+      You are a personal finance advisor. Analyze this user's spending and provide exactly 3 actionable insights.
 
-User's Spending Data:
-${JSON.stringify(args.userSpending, null, 2)}
+      User's Spending Data:
+      ${JSON.stringify(args.userSpending, null, 2)}
 
-Market Trends:
-${args.trends}
+      Market Trends:
+      ${args.trends}
 
-Generate exactly 3 insights in this JSON format:
-[
-  {
-    "title": "Short, catchy title (max 50 chars)",
-    "description": "Detailed, actionable advice (2-3 sentences, max 200 chars)",
-    "category": "one of the user's top categories or 'General'",
-    "impact": "high, medium, or low"
-  }
-]
+      Generate exactly 3 insights in this JSON format:
+      [
+        {
+          "title": "Short, catchy title (max 50 chars)",
+          "description": "Detailed, actionable advice (2-3 sentences, max 200 chars)",
+          "category": "one of the user's top categories or 'General'",
+          "impact": "high, medium, or low"
+        }
+      ]
 
-Focus on:
-1. Comparing user's spending to market averages
-2. Identifying concrete savings opportunities
-3. Highlighting positive habits or areas that need attention
-4. Being specific with dollar amounts and percentages when possible
+      Focus on:
+      1. Comparing user's spending to market averages
+      2. Identifying concrete savings opportunities
+      3. Highlighting positive habits or areas that need attention
+      4. Being specific with dollar amounts and percentages when possible
 
-Return ONLY valid JSON, no markdown formatting or extra text.
-`;
+      Return ONLY valid JSON, no markdown formatting or extra text.
+    `;
 
     try {
       const { text } = await generateText({
-        model: google("gemini-2.0-flash-exp"),
+        model: google("gemini-2.5-flash"),
         prompt,
         temperature: 0.7,
       });

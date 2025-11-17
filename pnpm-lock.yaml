@@ -122,6 +122,9 @@ importers:
       convex:
         specifier: ^1.28.2
         version: 1.28.2(react@19.2.0)
+      convex-helpers:
+        specifier: ^0.1.104
+        version: 0.1.104(@standard-schema/spec@1.0.0)(convex@1.28.2(react@19.2.0))(react@19.2.0)(typescript@5.9.3)(zod@4.1.12)
       locale-currency:
         specifier: ^1.0.0
         version: 1.0.0

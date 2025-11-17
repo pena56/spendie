@@ -3,7 +3,7 @@ import { FunctionReturnType } from "convex/server";
 import { BotMessageSquare } from "lucide-react";
 
 interface InsightCardProps {
-  data?: FunctionReturnType<typeof api.dashboard.getDashboardData>["insights"];
+  data?: FunctionReturnType<typeof api.workflows.insights.getActiveInsights>;
 }
 
 export function InsightCards({ data }: InsightCardProps) {

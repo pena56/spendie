@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import { TransactionCategories } from "@/constants/categories";
+import { EmptyState } from "../empty-state";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -174,11 +175,11 @@ export function DataTable<TData, TValue>({
                 ))
               ) : (
                 <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    No results.
+                  <TableCell colSpan={columns.length}>
+                    <EmptyState
+                      description="No transactions available"
+                      title="No transaction"
+                    />
                   </TableCell>
                 </TableRow>
               )}

@@ -17,7 +17,7 @@ function PrivateLayout() {
   }, [isAuthenticated]);
 
   if (isLoading) {
-    return <LoadingScreen />;
+    return <LoadingScreen hideTips={false} />;
   }
 
   if (!isAuthenticated) {
