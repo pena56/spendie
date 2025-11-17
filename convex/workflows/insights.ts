@@ -24,6 +24,10 @@ export const generateInsightsWorkflow = workflow.define({
   args: { userId: v.id("users") },
   returns: v.any(),
   handler: async (step, args): Promise<any> => {
+    const userCurrency = await step.runQuery(internal.user.getUserCurrency, {
+      userId: args.userId,
+    });
+
     // Step 1: Update status - Analyzing spending patterns
     await step.runMutation(internal.workflows.insightsHelpers.updateStatus, {
       userId: args.userId,
@@ -49,7 +53,9 @@ export const generateInsightsWorkflow = workflow.define({
     // Step 4: Scrape financial trends
     const trends = await step.runAction(
       internal.workflows.insightsActions.scrapeFinancialTrends,
-      {}
+      {
+        currency: userCurrency || "USD",
+      }
     );
 
     // Step 5: Update status - Comparing data
@@ -74,6 +80,7 @@ export const generateInsightsWorkflow = workflow.define({
       {
         userSpending,
         trends,
+        currency: userCurrency || undefined,
       }
     );
 

@@ -1,11 +1,4 @@
-import { getAuthUserId } from "@convex-dev/auth/server";
-import {
-  action,
-  internalMutation,
-  internalQuery,
-  mutation,
-  query,
-} from "./_generated/server";
+import { internalMutation, internalQuery } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 import { internal } from "./_generated/api";
 import { Scrypt } from "lucia";
@@ -203,6 +196,22 @@ export const updatePassword = internalMutation({
     await ctx.db.patch(args.accountId, {
       secret: args.newPasswordHash,
     });
+  },
+});
+
+export const getUserCurrency = internalQuery({
+  args: {
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const { userId } = args;
+
+    const user = await ctx.db.get(userId);
+    if (!user) {
+      return null;
+    }
+
+    return user.currency;
   },
 });
 

@@ -106,7 +106,9 @@ export const getUserSpendingData = internalAction({
 // ============================================
 
 export const scrapeFinancialTrends = internalAction({
-  args: {},
+  args: {
+    currency: v.string(),
+  },
   handler: async (ctx, args): Promise<string> => {
     const firecrawl = new Firecrawl({
       apiKey: process.env.FIRECRAWL_API_KEY!,
@@ -117,7 +119,6 @@ export const scrapeFinancialTrends = internalAction({
 
     try {
       // Step 1: Scrape the main page to get article links
-      console.log("Scraping main page for article links...");
       const mainPage = await firecrawl.scrape(sources[0], {
         formats: ["markdown"],
       });
@@ -211,7 +212,7 @@ export const scrapeFinancialTrends = internalAction({
         - Gas prices fluctuating between $3-4 per gallon
         - Streaming services averaging $50/month per household
         - Healthcare costs rising 6% annually
-        
+
         Note: This is fallback data. Live article scraping temporarily unavailable.
       `);
 
@@ -219,6 +220,228 @@ export const scrapeFinancialTrends = internalAction({
     }
   },
 });
+
+// export const scrapeFinancialTrends = internalAction({
+//   args: {
+//     currency: v.string(), // e.g., "USD", "EUR", "GBP", "NGN", etc.
+//   },
+//   handler: async (ctx, args): Promise<string> => {
+//     const { currency } = args;
+
+//     const firecrawl = new Firecrawl({
+//       apiKey: process.env.FIRECRAWL_API_KEY!,
+//     });
+
+//     // Map currency to country/region for better search results
+//     const currencyToRegion: Record<string, string> = {
+//       USD: "United States",
+//       EUR: "Europe",
+//       GBP: "United Kingdom",
+//       NGN: "Nigeria",
+//       CAD: "Canada",
+//       AUD: "Australia",
+//       JPY: "Japan",
+//       CNY: "China",
+//       INR: "India",
+//       BRL: "Brazil",
+//       ZAR: "South Africa",
+//       // Add more as needed
+//     };
+
+//     const region = currencyToRegion[currency] || currency;
+//     const scrapedData: string[] = [];
+
+//     try {
+//       // Step 1: Search for financial articles based on currency/region
+//       const searchQuery = `${region} personal finance trends ${new Date().getFullYear()}`;
+//       const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(
+//         searchQuery
+//       )}`;
+
+//       console.log(`Searching for: ${searchQuery}`);
+
+//       // Use Firecrawl to scrape Google search results
+//       const searchResults = await firecrawl.scrape(searchUrl, {
+//         formats: ["markdown"],
+//       });
+
+//       if (!searchResults.markdown) {
+//         throw new Error("Failed to scrape search results");
+//       }
+
+//       // Step 2: Extract article URLs from search results
+//       const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g;
+//       const matches = [...searchResults.markdown.matchAll(linkRegex)];
+
+//       // Filter for reputable financial news sources
+//       const reputableDomains = [
+//         "reuters.com",
+//         "bloomberg.com",
+//         "ft.com",
+//         "wsj.com",
+//         "cnbc.com",
+//         "forbes.com",
+//         "businessinsider.com",
+//         "marketwatch.com",
+//         "investopedia.com",
+//         "nytimes.com",
+//         "bbc.com",
+//         "theguardian.com",
+//         "economist.com",
+//         // Add region-specific sources
+//         "vanguardngr.com", // Nigeria
+//         "punchng.com", // Nigeria
+//         "thisday.ng", // Nigeria
+//       ];
+
+//       const articleUrls = matches
+//         .map((match) => match[2])
+//         .filter((url) => {
+//           // Check if URL is from a reputable domain
+//           const isReputable = reputableDomains.some((domain) =>
+//             url.includes(domain)
+//           );
+//           // Skip Google's internal links and ads
+//           const isValidArticle =
+//             !url.includes("google.com") &&
+//             !url.includes("youtube.com") &&
+//             !url.includes("#") &&
+//             !url.includes("/search?");
+
+//           return isReputable && isValidArticle;
+//         })
+//         // Remove duplicates
+//         .filter((url, index, self) => self.indexOf(url) === index)
+//         // Take first 5
+//         .slice(0, 5);
+
+//       console.log(`Found ${articleUrls.length} article URLs:`, articleUrls);
+
+//       // Step 3: If Google search didn't yield enough results, try currency-specific fallback sources
+//       if (articleUrls.length < 3) {
+//         console.log("Not enough URLs from search, using fallback sources...");
+//         const fallbackSources = getCurrencySpecificSources(currency);
+
+//         for (const source of fallbackSources) {
+//           try {
+//             const mainPage = await firecrawl.scrape(source, {
+//               formats: ["markdown"],
+//             });
+
+//             if (mainPage.markdown) {
+//               const linkMatches = [...mainPage.markdown.matchAll(linkRegex)];
+//               const sourceUrls = linkMatches
+//                 .map((match) => match[2])
+//                 .filter((url) => url.includes(new URL(source).hostname))
+//                 .slice(0, 3);
+
+//               articleUrls.push(...sourceUrls);
+//             }
+//           } catch (error) {
+//             console.error(`Error scraping fallback source ${source}:`, error);
+//           }
+//         }
+//       }
+
+//       // Step 4: Scrape each article
+//       if (articleUrls.length === 0) {
+//         throw new Error("No article URLs found");
+//       }
+
+//       const urlsToScrape = articleUrls.slice(0, 2);
+
+//       for (let i = 0; i < urlsToScrape.length; i++) {
+//         try {
+//           console.log(
+//             `Scraping article ${i + 1}/${urlsToScrape.length}: ${
+//               urlsToScrape[i]
+//             }`
+//           );
+
+//           const articleResult = await firecrawl.scrape(urlsToScrape[i], {
+//             formats: ["markdown"],
+//           });
+
+//           if (articleResult.markdown) {
+//             scrapedData.push(
+//               `\n=== Article ${i + 1}: ${urlsToScrape[i]} ===\n${
+//                 articleResult.markdown
+//               }`
+//             );
+//           }
+
+//           // Add delay to avoid rate limiting
+//           if (i < urlsToScrape.length - 1) {
+//             await new Promise((resolve) => setTimeout(resolve, 1500));
+//           }
+//         } catch (articleError) {
+//           console.error(
+//             `Error scraping article ${urlsToScrape[i]}:`,
+//             articleError
+//           );
+//         }
+//       }
+
+//       if (scrapedData.length === 0) {
+//         throw new Error("Failed to scrape any articles");
+//       }
+
+//       console.log(
+//         `Successfully scraped ${scrapedData.length} articles for ${currency}`
+//       );
+//       return scrapedData.join("\n\n");
+//     } catch (error) {
+//       console.error("Error scraping trends:", error);
+
+//       // Use currency-specific fallback data
+//       const fallbackData = getCurrencyFallbackData(currency, region);
+//       scrapedData.push(fallbackData);
+
+//       return scrapedData.join("\n\n");
+//     }
+//   },
+// });
+
+// Helper function to get currency-specific sources
+function getCurrencySpecificSources(currency: string): string[] {
+  const sources: Record<string, string[]> = {
+    USD: [
+      "https://www.bankrate.com/personal-finance/",
+      "https://www.investopedia.com/personal-finance-4427760",
+    ],
+    EUR: [
+      "https://www.ft.com/personal-finance",
+      "https://www.bloomberg.com/europe",
+    ],
+    GBP: [
+      "https://www.theguardian.com/uk/money",
+      "https://www.ft.com/personal-finance",
+    ],
+    NGN: [
+      "https://www.vanguardngr.com/category/business/",
+      "https://punchng.com/topics/business/",
+    ],
+    // Add more currency-specific sources
+  };
+
+  return sources[currency] || sources.USD;
+}
+
+// Helper function for currency-specific fallback data
+function getCurrencyFallbackData(currency: string, region: string): string {
+  return `
+    Top Financial Trends 2024 - ${region} (${currency}):
+    - Personal finance trends vary by region and currency
+    - Cost of living adjustments affecting ${currency} holders
+    - Regional economic conditions impacting spending patterns
+    - Currency-specific inflation rates and purchasing power
+    - Local market trends and investment opportunities
+    - Regional banking and financial services developments
+    
+    Note: This is fallback data for ${currency}. Live article scraping temporarily unavailable.
+    For the most current information, please try again later or check local financial news sources.
+  `;
+}
 
 // ============================================
 // ACTION: Generate Insights with AI (Vercel AI SDK)
@@ -228,12 +451,13 @@ export const generateInsightsWithAI = internalAction({
   args: {
     userSpending: v.any(),
     trends: v.string(),
+    currency: v.optional(v.string()),
   },
   handler: async (ctx, args): Promise<Insight[]> => {
     const prompt = `
       You are a personal finance advisor. Analyze this user's spending and provide exactly 3 actionable insights.
 
-      User's Spending Data:
+      User's Spending Data is in ${args.currency}:
       ${JSON.stringify(args.userSpending, null, 2)}
 
       Market Trends:
@@ -254,6 +478,7 @@ export const generateInsightsWithAI = internalAction({
       2. Identifying concrete savings opportunities
       3. Highlighting positive habits or areas that need attention
       4. Being specific with dollar amounts and percentages when possible
+      5. Every amount should be formatted in ${args.currency}
 
       Return ONLY valid JSON, no markdown formatting or extra text.
     `;

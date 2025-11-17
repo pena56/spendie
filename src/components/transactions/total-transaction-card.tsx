@@ -14,7 +14,7 @@ export function TotalTransactionCard({
 }: TotalTransactionCardProps) {
   const isIncome = type === "income";
 
-  const title = isIncome ? "Income" : "Expense";
+  const title = isIncome ? "This Month's Income" : "This Month's Expense";
   const bgClass = isIncome ? "bg-lime-200" : "bg-pink-200";
   const percentColor = isIncome ? "text-green-700" : "text-red-700";
   const Icon = isIncome ? TrendingUp : TrendingDown;

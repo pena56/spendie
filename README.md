@@ -4,14 +4,16 @@
 
 **SPENDIE** is a web app for tracking expenses, splitting bills, and gamifying your finances. Built for a hackathon sponsored by Convex, CodeRabbit, Firecrawl, Netlify, Autumn, Sentry, and Cloudflare. **SPENDIE** turns money management into an addictive game: Earn XP for logging spends, unlock achievements, and snag rewards like avatar and frames. AI-powered voice/scan inputs, real-time social splits, and personalized insights make it effortless and fun.
 
-Home Page![alt text](image.png))
+Home Page
+
+![Home page screenshot](./image.png)
 
 ## 🚀 Features
 
 - **Smart Tracking:** Log income/expenses manually, via voice (Web Speech API), or scan receipts (Gemini Vision API). Auto-categorize with AI.
 - **Budgeting Magic:** Set flexible periods (daily/weekly/monthly), track progress with colorful bars.
 - **Social Splits:** Create group bills, invite via user search, accept/settle individually (partial payments supported). Real-time balances.
-- **AI Insights:** Personalized tips (e.g., "Cut food by 20%") pulled from articles from https://www.bankrate.com/personal-finance/ via Firecrawl + Gemini.
+- **AI Insights:** Personalized tips (e.g., "Cut food by 20%") pulled from articles from [Bankrate](https://www.bankrate.com/personal-finance/) via Firecrawl + Gemini.
 - **Achievements & Perks:** 15 achievements. Level up every 500 XP; equip rewards in profile.
 
 Built for speed and scalability: Real-time sync via Convex, queries/mutations with TanStack Query.
@@ -19,12 +21,12 @@ Built for speed and scalability: Real-time sync via Convex, queries/mutations wi
 ## 🛠 Tech Stack
 
 | Category       | Tools                                                             |
-| -------------- | ----------------------------------------------------------------- | --- |
+| -------------- | ----------------------------------------------------------------- |
 | **Frontend**   | TanStack Start (React, Query, Router), Tailwind CSS, Lucide Icons |
 | **Backend/DB** | Convex (schema, auth, realtime, scheduler, workflows)             |
 | **AI/ML**      | Google Gemini (vision/text via Vercel AI SDK)                     |
 | **Scraping**   | Firecrawl                                                         |
-| **Voice**      | Web Speech API                                                    |     |
+| **Voice**      | Web Speech API                                                    |
 | **Forms**      | TanStack Form + Zod validation                                    |
 | **UI**         | Shadcn/UI                                                         |
 | **Deployment** | Cloudflare (frontend), Convex Dashboard (backend)                 |
@@ -150,4 +152,4 @@ MIT ©pena56 2025. Built with ❤️.
 
 ---
 
-**Questions?** Open an issue or ping @https://x.com/pena_mo56 on X. Let's level up finances together! 🚀
+**Questions?** Open an issue or ping [@pena_mo56 on X](https://x.com/pena_mo56). Let's level up finances together! 🚀

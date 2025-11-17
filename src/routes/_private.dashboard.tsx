@@ -5,6 +5,7 @@ import Layout from "@/components/layout";
 import { LoadingScreen } from "@/components/loading-screen";
 import { Button } from "@/components/ui/button";
 import { EncryptedText } from "@/components/ui/encrypted-text";
+import { Progress } from "@/components/ui/progress";
 import { getDailyGreeting } from "@/constants/greetings";
 import { showErrorMessage } from "@/lib/utils";
 import {
@@ -36,7 +37,7 @@ function RouteComponent() {
     convexQuery(api.workflows.insights.getActiveInsights, {})
   );
 
-  const { mutate: generateInsight } = useMutation({
+  const { mutate: generateInsight, isPending } = useMutation({
     mutationFn: useConvexMutation(
       api.workflows.insights.startInsightGeneration
     ),
@@ -57,16 +58,22 @@ function RouteComponent() {
           </div>
 
           <div className="flex items-center justify-between">
-            <p className="text-left">
+            <div>
               {insightStatus && insightStatus?.progress > 0 && (
-                <EncryptedText
-                  text={insightStatus.status}
-                  encryptedClassName="text-black"
-                  revealedClassName="text-black font-black"
-                  revealDelayMs={50}
-                />
+                <div className="flex flex-col gap-2 w-full">
+                  <EncryptedText
+                    text={`${insightStatus.status}`}
+                    encryptedClassName="text-black"
+                    revealedClassName="text-black font-black"
+                    revealDelayMs={50}
+                  />
+
+                  {insightStatus.progress < 100 ? (
+                    <Progress value={insightStatus.progress} />
+                  ) : null}
+                </div>
               )}
-            </p>
+            </div>
 
             <Button
               onClick={() => generateInsight({})}
@@ -78,6 +85,7 @@ function RouteComponent() {
                   ? true
                   : false
               }
+              isLoading={isPending}
               className="border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-0.5 -translate-y-0.5"
             >
               <Bot
