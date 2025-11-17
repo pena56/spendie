@@ -5,13 +5,12 @@ import {
   Outlet,
   Scripts,
 } from "@tanstack/react-router";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { TanStackDevtools } from "@tanstack/react-devtools";
 import { Toaster } from "@/components/ui/sonner";
+import { wrapCreateRootRouteWithSentry } from "@sentry/tanstackstart-react";
 
 import appCss from "../styles.css?url";
 
-export const Route = createRootRouteWithContext<{
+export const Route = wrapCreateRootRouteWithSentry(createRootRouteWithContext)<{
   queryClient: QueryClient;
 }>()({
   head: () => ({
@@ -54,17 +53,14 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
-        <Toaster />
-        <TanStackDevtools
-          config={{
-            position: "bottom-right",
+        <Toaster
+          duration={5000}
+          position="top-center"
+          theme="light"
+          richColors
+          style={{
+            fontFamily: "Space Grotesk",
           }}
-          plugins={[
-            {
-              name: "Tanstack Router",
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-          ]}
         />
         <Scripts />
       </body>

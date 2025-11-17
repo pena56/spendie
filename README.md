@@ -1,299 +1,155 @@
-Welcome to your new TanStack app! 
+# SPENDIE - Gamified Expense Tracker
 
-# Getting Started
+[![Convex](https://img.shields.io/badge/Powered%20by-Convex-blue)](https://convex.dev) [![TanStack](https://img.shields.io/badge/Built%20with-TanStack%20Start-orange)](https://tanstack.com/start)
 
-To run this application:
+**SPENDIE** is a web app for tracking expenses, splitting bills, and gamifying your finances. Built for a hackathon sponsored by Convex, CodeRabbit, Firecrawl, Netlify, Autumn, Sentry, and Cloudflare. **SPENDIE** turns money management into an addictive game: Earn XP for logging spends, unlock achievements, and snag rewards like avatar and frames. AI-powered voice/scan inputs, real-time social splits, and personalized insights make it effortless and fun.
+
+Home Page
+
+![Home page screenshot](./image.png)
+
+## 🚀 Features
+
+- **Smart Tracking:** Log income/expenses manually, via voice (Web Speech API), or scan receipts (Gemini Vision API). Auto-categorize with AI.
+- **Budgeting Magic:** Set flexible periods (daily/weekly/monthly), track progress with colorful bars.
+- **Social Splits:** Create group bills, invite via user search, accept/settle individually (partial payments supported). Real-time balances.
+- **AI Insights:** Personalized tips (e.g., "Cut food by 20%") pulled from articles from [Bankrate](https://www.bankrate.com/personal-finance/) via Firecrawl + Gemini.
+- **Achievements & Perks:** 15 achievements. Level up every 500 XP; equip rewards in profile.
+
+Built for speed and scalability: Real-time sync via Convex, queries/mutations with TanStack Query.
+
+## 🛠 Tech Stack
+
+| Category       | Tools                                                             |
+| -------------- | ----------------------------------------------------------------- |
+| **Frontend**   | TanStack Start (React, Query, Router), Tailwind CSS, Lucide Icons |
+| **Backend/DB** | Convex (schema, auth, realtime, scheduler, workflows)             |
+| **AI/ML**      | Google Gemini (vision/text via Vercel AI SDK)                     |
+| **Scraping**   | Firecrawl                                                         |
+| **Voice**      | Web Speech API                                                    |
+| **Forms**      | TanStack Form + Zod validation                                    |
+| **UI**         | Shadcn/UI                                                         |
+| **Deployment** | Cloudflare (frontend), Convex Dashboard (backend)                 |
+
+## 📦 Local Setup
+
+Get SPENDIE running in <5 minutes. Requires Node.js 18+.
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org) (v18+)
+- [Convex CLI](https://www.npmjs.com/package/convex): `npm i -g convex`
+
+- API Keys:
+  - **Gemini:** Get from [Google AI Studio](https://aistudio.google.com/app/apikey) (free tier OK).
+  - **Firecrawl:** Sign up at [firecrawl.dev](https://firecrawl.dev) for API key.
+  - **Sentry:** Sign up at [sentry.io](https://sentry.io) for API key.
+
+### 1. Clone & Install
 
 ```bash
+git clone https://github.com/pena56/spendie
+cd spendie
 pnpm install
-pnpm start
 ```
 
-# Building For Production
+### 2. Set Up Environment
 
-To build this application for production:
+Create `.env.local` in root:
+
+```
+# Deployment used by `npx convex dev`
+CONVEX_DEPLOYMENT=after_convex_init
+
+VITE_CONVEX_URL=after_convex_init
+
+SENTRY_AUTH_TOKEN=your_sentry_auth_token
+
+GEMINI_API_KEY=your_gemini_api_key
+
+GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_api_key
+
+FIRECRAWL_API_KEY=your_firecrawl_api_key
+```
+
+### 3. Initialize Convex Backend
 
 ```bash
-pnpm build
+npx convex dev  # Starts local dev server (http://127.0.0.1:3180)
+# Auto-creates project; follow prompts for auth (email/password setup)
 ```
 
-## Testing
+- Seed data (optional): Run `npx convex run achievements:seedAchievements` for demo achievements.
 
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+### 4. Run Development Server
 
 ```bash
-pnpm test
+pnpm run dev  # Starts TanStack Start at http://localhost:3000
 ```
 
-## Styling
+- Open in browser; sign up/login to test.
+- Voice/scan: Grant mic/camera perms.
 
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+### 5. Scripts
 
+| Command              | Description          |
+| -------------------- | -------------------- |
+| `pnpm run dev`       | Local dev server     |
+| `pnpm run build`     | Build for prod       |
+| `pnpm run preview`   | Preview built app    |
+| `npx convex dev`     | Local Convex backend |
+| `npx convex deploy`  | Deploy backend       |
+| `npx convex codegen` | Regen TS types       |
 
+### Troubleshooting
 
-## Shadcn
+- **API Errors:** Check `.env` keys; verify in Convex dashboard.
+- **Auth:** Uses Convex Auth—email/password.
+- Logs: Convex dashboard for backend; browser console for frontend.
 
-Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
+## 🌐 Deployment
 
-```bash
-pnpx shadcn@latest add button
-```
+### Backend (Convex)
 
+1. `npx convex deploy` → Deploys to cloud.
 
+### Frontend (Cloudflare)
 
-## Routing
-This project uses [TanStack Router](https://tanstack.com/router). The initial setup is a file based router. Which means that the routes are managed as files in `src/routes`.
+1. Push to GitHub.
+2. Setup Wrangler and run deploy script.
+3. Add env vars (GEMINI/FIRECRAWL keys).
+4. Deploy: Auto on push; preview branches.
 
-### Adding A Route
+## 🔑 API Keys & Integrations
 
-To add a new route to your application just add another a new file in the `./src/routes` directory.
+| Service       | Key/Setup     | Usage                        |
+| ------------- | ------------- | ---------------------------- |
+| **Convex**    | Auto-init     | DB, auth, realtime           |
+| **Gemini**    | AI Studio key | Voice/scan parsing, insights |
+| **Firecrawl** | Dashboard key | Scrape tips                  |
+| **Sentry**    | API key       | Error monitoring             |
 
-TanStack will automatically generate the content of the route file for you.
+Free tiers suffice for hackathon/demo.
 
-Now that you have two routes you can use a `Link` component to navigate between them.
+## 🎮 Gamification
 
-### Adding Links
+- **XP Sources:** Login (+50), Txn (+10), Split settle (+20), Goal contrib (+15).
+- **Achievements:** 15.
+- **Rewards:** Avatars, frames — equip in Profile.
 
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
+## 🤝 Contributing
 
-```tsx
-import { Link } from "@tanstack/react-router";
-```
+1. Fork & clone.
+2. `pnpm install && npx convex dev`.
+3. Commit: Conventional (e.g., "feat: add goal sharing").
+4. PR: Describe changes, test screenshots.
 
-Then anywhere in your JSX you can use it like so:
+Hackathon code—PRs welcome for polish!
 
-```tsx
-<Link to="/about">About</Link>
-```
+## 📄 License
 
-This will create a link that will navigate to the `/about` route.
+MIT ©pena56 2025. Built with ❤️.
 
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
+---
 
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you use the `<Outlet />` component.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { Outlet, createRootRoute } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-
-import { Link } from "@tanstack/react-router";
-
-export const Route = createRootRoute({
-  component: () => (
-    <>
-      <header>
-        <nav>
-          <Link to="/">Home</Link>
-          <Link to="/about">About</Link>
-        </nav>
-      </header>
-      <Outlet />
-      <TanStackRouterDevtools />
-    </>
-  ),
-})
-```
-
-The `<TanStackRouterDevtools />` component is not required so you can remove it if you don't want it in your layout.
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-const peopleRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/people",
-  loader: async () => {
-    const response = await fetch("https://swapi.dev/api/people");
-    return response.json() as Promise<{
-      results: {
-        name: string;
-      }[];
-    }>;
-  },
-  component: () => {
-    const data = peopleRoute.useLoaderData();
-    return (
-      <ul>
-        {data.results.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    );
-  },
-});
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-### React-Query
-
-React-Query is an excellent addition or alternative to route loading and integrating it into you application is a breeze.
-
-First add your dependencies:
-
-```bash
-pnpm add @tanstack/react-query @tanstack/react-query-devtools
-```
-
-Next we'll need to create a query client and provider. We recommend putting those in `main.tsx`.
-
-```tsx
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
-// ...
-
-const queryClient = new QueryClient();
-
-// ...
-
-if (!rootElement.innerHTML) {
-  const root = ReactDOM.createRoot(rootElement);
-
-  root.render(
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
-  );
-}
-```
-
-You can also add TanStack Query Devtools to the root route (optional).
-
-```tsx
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-
-const rootRoute = createRootRoute({
-  component: () => (
-    <>
-      <Outlet />
-      <ReactQueryDevtools buttonPosition="top-right" />
-      <TanStackRouterDevtools />
-    </>
-  ),
-});
-```
-
-Now you can use `useQuery` to fetch your data.
-
-```tsx
-import { useQuery } from "@tanstack/react-query";
-
-import "./App.css";
-
-function App() {
-  const { data } = useQuery({
-    queryKey: ["people"],
-    queryFn: () =>
-      fetch("https://swapi.dev/api/people")
-        .then((res) => res.json())
-        .then((data) => data.results as { name: string }[]),
-    initialData: [],
-  });
-
-  return (
-    <div>
-      <ul>
-        {data.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-export default App;
-```
-
-You can find out everything you need to know on how to use React-Query in the [React-Query documentation](https://tanstack.com/query/latest/docs/framework/react/overview).
-
-## State Management
-
-Another common requirement for React applications is state management. There are many options for state management in React. TanStack Store provides a great starting point for your project.
-
-First you need to add TanStack Store as a dependency:
-
-```bash
-pnpm add @tanstack/store
-```
-
-Now let's create a simple counter in the `src/App.tsx` file as a demonstration.
-
-```tsx
-import { useStore } from "@tanstack/react-store";
-import { Store } from "@tanstack/store";
-import "./App.css";
-
-const countStore = new Store(0);
-
-function App() {
-  const count = useStore(countStore);
-  return (
-    <div>
-      <button onClick={() => countStore.setState((n) => n + 1)}>
-        Increment - {count}
-      </button>
-    </div>
-  );
-}
-
-export default App;
-```
-
-One of the many nice features of TanStack Store is the ability to derive state from other state. That derived state will update when the base state updates.
-
-Let's check this out by doubling the count using derived state.
-
-```tsx
-import { useStore } from "@tanstack/react-store";
-import { Store, Derived } from "@tanstack/store";
-import "./App.css";
-
-const countStore = new Store(0);
-
-const doubledStore = new Derived({
-  fn: () => countStore.state * 2,
-  deps: [countStore],
-});
-doubledStore.mount();
-
-function App() {
-  const count = useStore(countStore);
-  const doubledCount = useStore(doubledStore);
-
-  return (
-    <div>
-      <button onClick={() => countStore.setState((n) => n + 1)}>
-        Increment - {count}
-      </button>
-      <div>Doubled - {doubledCount}</div>
-    </div>
-  );
-}
-
-export default App;
-```
-
-We use the `Derived` class to create a new store that is derived from another store. The `Derived` class has a `mount` method that will start the derived store updating.
-
-Once we've created the derived store we can use it in the `App` component just like we would any other store using the `useStore` hook.
-
-You can find out everything you need to know on how to use TanStack Store in the [TanStack Store documentation](https://tanstack.com/store/latest).
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
+**Questions?** Open an issue or ping [@pena_mo56 on X](https://x.com/pena_mo56). Let's level up finances together! 🚀

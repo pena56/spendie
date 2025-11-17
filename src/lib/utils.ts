@@ -14,3 +14,21 @@ export function showErrorMessage(error: unknown) {
     toast.error("An unexpected error occurred.");
   }
 }
+
+export function formatDate(timestamp: number): string {
+  const date = new Date(timestamp);
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export function formatCurrency(amount?: number): string {
+  const formatter = new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
+    maximumFractionDigits: 2,
+  });
+  return formatter.format(amount ?? 0);
+}
