@@ -31,7 +31,7 @@ export default function BudgetsOverview({ data }: BudgetsOverviewProps) {
             btnLabel="Add budget"
             description="No recent budgets available"
             title="No Budget"
-            onBtnClick={() => router.navigate({ to: "/transactions" })}
+            onBtnClick={() => router.navigate({ to: "/budgets" })}
           />
         ) : (
           data?.map((item) => (

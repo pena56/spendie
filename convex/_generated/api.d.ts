@@ -15,6 +15,7 @@ import type * as dashboard from "../dashboard.js";
 import type * as http from "../http.js";
 import type * as lib_authHelpers from "../lib/authHelpers.js";
 import type * as seedAchievements from "../seedAchievements.js";
+import type * as seedTransactions from "../seedTransactions.js";
 import type * as splits from "../splits.js";
 import type * as transactions from "../transactions.js";
 import type * as user from "../user.js";
@@ -44,6 +45,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   "lib/authHelpers": typeof lib_authHelpers;
   seedAchievements: typeof seedAchievements;
+  seedTransactions: typeof seedTransactions;
   splits: typeof splits;
   transactions: typeof transactions;
   user: typeof user;

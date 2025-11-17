@@ -78,10 +78,11 @@ function RouteComponent() {
             <Button
               onClick={() => generateInsight({})}
               disabled={
-                insightStatus?.progress &&
-                insightStatus?.progress > 0 &&
-                insightStatus?.progress &&
-                insightStatus?.progress < 100
+                (insightStatus?.progress &&
+                  insightStatus?.progress > 0 &&
+                  insightStatus?.progress &&
+                  insightStatus?.progress < 100) ||
+                data?.transactions?.length === 0
                   ? true
                   : false
               }
